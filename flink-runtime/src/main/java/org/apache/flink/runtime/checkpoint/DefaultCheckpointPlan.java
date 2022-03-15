@@ -62,7 +62,6 @@ public class DefaultCheckpointPlan implements CheckpointPlan {
             List<Execution> finishedTasks,
             List<ExecutionJobVertex> fullyFinishedJobVertex,
             boolean mayHaveFinishedTasks) {
-
         this.tasksToTrigger = checkNotNull(tasksToTrigger);
         this.tasksToWaitFor = checkNotNull(tasksToWaitFor);
         this.tasksToCommitTo = checkNotNull(tasksToCommitTo);
