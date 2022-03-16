@@ -23,15 +23,20 @@ import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.StateBackendOptions;
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.examples.join.WindowJoinSampleData.GradeSource;
 import org.apache.flink.streaming.examples.join.WindowJoinSampleData.SalarySource;
+
+import java.io.File;
 
 /**
  * Example illustrating a windowed stream join between two data streams.
@@ -60,6 +65,12 @@ public class WindowJoin2 {
                 "To customize example, use: WindowJoin [--windowSize <window-size-in-millis>] [--rate <elements-per-second>]");
 
         Configuration conf = new Configuration();
+        final File checkpointDir = new File("C:\\Users\\Takdir\\Docker\\checkpoint");
+        final File savepointDir = new File("C:\\Users\\Takdir\\Docker\\savepoint");
+
+        conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
+        conf.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY, checkpointDir.toURI().toString());
+        conf.setString(CheckpointingOptions.SAVEPOINT_DIRECTORY, savepointDir.toURI().toString());
 
         // obtain execution environment, run this example in "ingestion time"
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(conf);
@@ -67,26 +78,35 @@ public class WindowJoin2 {
         // make parameters available in the web interface
         env.getConfig().setGlobalJobParameters(params);
 
+        //setting for concurrent partial snapshots
+        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(0);
+        env.getCheckpointConfig().setCheckpointTimeout(60000); //checkpoints have to complete within one minute, or are discarded
+        env.getCheckpointConfig().setTolerableCheckpointFailureNumber(0); //shutdown job if failure found
+        env.getCheckpointConfig().setMaxConcurrentCheckpoints(Integer.MAX_VALUE); //as much as possible
+
+
         //        env.enableCheckpointing(2000);
-        env.setStateBackend(new HashMapStateBackend());
-        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
+//        env.setStateBackend(new HashMapStateBackend());
+//        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
 
         // create the data sources for both grades and salaries
         DataStream<Tuple2<String, Integer>> grades =
                 GradeSource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create());
+                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1a");
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create());
+                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1b");
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
         DataStream<Tuple3<String, Integer, Integer>> joinedStream =
                 runWindowJoin(grades, salaries, windowSize);
 
+        ((SingleOutputStreamOperator) joinedStream).uid("join");
+
         // print the results with a single thread, rather than in parallel
-        joinedStream.print().setParallelism(1);
+        joinedStream.print().setParallelism(1).uid("Sink");
 
         // execute program
         env.execute("Windowed Join Example");
