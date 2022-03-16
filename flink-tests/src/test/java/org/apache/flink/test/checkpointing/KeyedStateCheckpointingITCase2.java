@@ -153,9 +153,9 @@ public class KeyedStateCheckpointingITCase2 extends TestLogger {
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(PARALLELISM);
-//        env.enableCheckpointing(500);
+        //        env.enableCheckpointing(500);
         env.enableCheckpointing(1000);
-        //env.setRestartStrategy(RestartStrategies.fixedDelayRestart(Integer.MAX_VALUE, 0L));
+        // env.setRestartStrategy(RestartStrategies.fixedDelayRestart(Integer.MAX_VALUE, 0L));
         env.setRestartStrategy(RestartStrategies.noRestart());
 
         env.setStateBackend(new HashMapStateBackend());
@@ -229,7 +229,7 @@ public class KeyedStateCheckpointingITCase2 extends TestLogger {
             while (isRunning && nextElement < numElements) {
 
                 // throttle / block if we are still waiting for the checkpoint
-//                System.out.println("### " + checkpointHappened);
+                //                System.out.println("### " + checkpointHappened);
                 if (!checkpointHappened) {
                     if (nextElement < checkpointLatestAt) {
                         // only throttle
@@ -346,7 +346,6 @@ public class KeyedStateCheckpointingITCase2 extends TestLogger {
                 this.notifyAll();
             }
         }
-
     }
 
     private static class CounterSink extends RichSinkFunction<Tuple2<Integer, Long>> {

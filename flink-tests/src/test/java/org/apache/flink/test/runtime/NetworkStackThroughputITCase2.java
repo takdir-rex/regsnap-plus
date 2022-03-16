@@ -226,10 +226,7 @@ public class NetworkStackThroughputITCase2 extends TestLogger {
 
     @Test
     public void testThroughput() throws Exception {
-        Object[][] configParams =
-                new Object[][] {
-                    new Object[] {1, false, false, false, 4, 2}
-                };
+        Object[][] configParams = new Object[][] {new Object[] {1, false, false, false, 4, 2}};
 
         for (Object[] p : configParams) {
             final int dataVolumeGb = (Integer) p[0];

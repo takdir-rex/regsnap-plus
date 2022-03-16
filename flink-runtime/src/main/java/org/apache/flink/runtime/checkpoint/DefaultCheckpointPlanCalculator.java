@@ -83,21 +83,22 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
                     }
                 });
 
-//        jobVerticesInTopologyOrderIterable.forEach(
-//                jobVertex -> {
-//                    jobVerticesInTopologyOrder.add(jobVertex);
-////                    allTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-//
-//                    if (jobVertex.getJobVertex().isInputVertex()) {
-////                        sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-//                    } else {
-//                        // Trigger checkpoint form intermediate operators
-//                        allTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-//                        if(!jobVertex.getJobVertex().isOutputVertex()){
-//                            sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-//                        }
-//                    }
-//                });
+        //        jobVerticesInTopologyOrderIterable.forEach(
+        //                jobVertex -> {
+        //                    jobVerticesInTopologyOrder.add(jobVertex);
+        ////                    allTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+        //
+        //                    if (jobVertex.getJobVertex().isInputVertex()) {
+        ////                        sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+        //                    } else {
+        //                        // Trigger checkpoint form intermediate operators
+        //                        allTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+        //                        if(!jobVertex.getJobVertex().isOutputVertex()){
+        //
+        // sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+        //                        }
+        //                    }
+        //                });
     }
 
     @Override

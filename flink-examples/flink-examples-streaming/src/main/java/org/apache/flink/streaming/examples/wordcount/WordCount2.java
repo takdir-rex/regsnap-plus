@@ -21,11 +21,11 @@ import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.MultipleParameterTool;
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
-import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.examples.wordcount.util.WordCountData;
+import org.apache.flink.util.ArrayUtils;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
@@ -60,13 +60,17 @@ public class WordCount2 {
         // set up the execution environment
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
+        //        Configuration config = new Configuration();
+        //        config.set(ExecutionCheckpointingOptions.ENABLE_CHECKPOINTS_AFTER_TASKS_FINISH,
+        // false);
+        //        env.configure(config);
+
         // make parameters available in the web interface
         env.getConfig().setGlobalJobParameters(params);
 
         env.enableCheckpointing(500);
         env.setStateBackend(new HashMapStateBackend());
-  		env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
-
+        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
 
         // get input data
         DataStream<String> text = null;
@@ -84,7 +88,7 @@ public class WordCount2 {
             System.out.println("Executing WordCount example with default input data set.");
             System.out.println("Use --input to specify file input.");
             // get default test text data
-            text = env.fromElements(WordCountData.WORDS);
+            text = env.fromElements(ArrayUtils.concat(WordCountData.WORDS, WordCountData.WORDS));
         }
 
         DataStream<Tuple2<String, Integer>> counts =
@@ -101,8 +105,8 @@ public class WordCount2 {
             System.out.println("Printing result to stdout. Use --output to specify output path.");
             counts.print();
         }
-        System.out.println("###");
-        System.out.println(env.getExecutionPlan());
+        //        System.out.println("###");
+        //        System.out.println(env.getExecutionPlan());
         // execute program
         env.execute("Streaming WordCount");
     }
