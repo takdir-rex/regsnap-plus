@@ -30,6 +30,8 @@ import org.apache.flink.configuration.StateBackendOptions;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.connector.kafka.source.KafkaSource;
+import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -68,8 +70,8 @@ public class WindowJoin3 {
                 "To customize example, use: WindowJoin [--windowSize <window-size-in-millis>] [--rate <elements-per-second>]");
 
         Configuration conf = new Configuration();
-        final File checkpointDir = new File("C:\\Users\\Takdir\\Docker\\checkpoint");
-        final File savepointDir = new File("C:\\Users\\Takdir\\Docker\\savepoint");
+        final File checkpointDir = new File("/Users/takdir/tmp/checkpoint");
+        final File savepointDir = new File("/Users/takdir/tmp/savepoint");
 
         conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
         conf.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY, checkpointDir.toURI().toString());
@@ -92,15 +94,6 @@ public class WindowJoin3 {
 //        env.setStateBackend(new HashMapStateBackend());
 //        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
 
-        // create the data sources for both grades and salaries
-        DataStream<Tuple2<String, Integer>> grades =
-                GradeSource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1a");
-
-        DataStream<Tuple2<String, Integer>> salaries =
-                SalarySource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1b");
-
         final String BOOTSTRAP_SERVER = "localhost:9092";
         Properties producerProps = new Properties();
         producerProps.put("bootstrap.servers", BOOTSTRAP_SERVER);
@@ -122,10 +115,29 @@ public class WindowJoin3 {
                 .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .build();
 
-        grades.sinkTo(sink1);
-        salaries.sinkTo(sink2);
+        // create the data sources for both grades and salaries
+                GradeSource.getSource(env, rate).forward().sinkTo(sink1).setParallelism(1);
 
+                SalarySource.getSource(env, rate).forward().sinkTo(sink2).setParallelism(1);
 
+        KafkaSource<Tuple2<String, Integer>> source1 = KafkaSource.<Tuple2<String, Integer>>builder()
+                .setBootstrapServers(BOOTSTRAP_SERVER)
+                .setTopics(TOPIC_1)
+                .setGroupId("group-1")
+                .setStartingOffsets(OffsetsInitializer.earliest())
+                .setValueOnlyDeserializer(new TopicInputSchema())
+                .build();
+
+        KafkaSource<Tuple2<String, Integer>> source2 = KafkaSource.<Tuple2<String, Integer>>builder()
+                .setBootstrapServers(BOOTSTRAP_SERVER)
+                .setTopics(TOPIC_2)
+                .setGroupId("group-2")
+                .setStartingOffsets(OffsetsInitializer.earliest())
+                .setValueOnlyDeserializer(new TopicInputSchema())
+                .build();
+
+        DataStream<Tuple2<String, Integer>> grades = env.fromSource(source1, IngestionTimeWatermarkStrategy.create(),"grades").setParallelism(1);
+        DataStream<Tuple2<String, Integer>> salaries = env.fromSource(source2, IngestionTimeWatermarkStrategy.create(),"salaries").setParallelism(1);
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
@@ -137,8 +149,10 @@ public class WindowJoin3 {
         // print the results with a single thread, rather than in parallel
         joinedStream.print().setParallelism(1).uid("Sink");
 
+        System.out.println("### " + env.getExecutionPlan());
+
         // execute program
-        env.execute("Windowed Join Example");
+        //env.execute("Windowed Join Example");
     }
 
     public static DataStream<Tuple3<String, Integer, Integer>> runWindowJoin(

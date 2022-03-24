@@ -65,8 +65,8 @@ public class WindowJoin2 {
                 "To customize example, use: WindowJoin [--windowSize <window-size-in-millis>] [--rate <elements-per-second>]");
 
         Configuration conf = new Configuration();
-        final File checkpointDir = new File("C:\\Users\\Takdir\\Docker\\checkpoint");
-        final File savepointDir = new File("C:\\Users\\Takdir\\Docker\\savepoint");
+        final File checkpointDir = new File("/Users/takdir/tmp/checkpoint");
+        final File savepointDir = new File("/Users/takdir/tmp/savepoint");
 
         conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
         conf.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY, checkpointDir.toURI().toString());
