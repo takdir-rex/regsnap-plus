@@ -819,7 +819,7 @@ public class AdaptiveSchedulerTest extends TestLogger {
                 new AdaptiveSchedulerBuilder(createJobGraph(), mainThreadExecutor).build();
 
         assertThat(
-                scheduler.triggerSavepoint("some directory", false),
+                scheduler.triggerSavepoint("some directory", false, null),
                 futureFailedWith(CheckpointException.class));
     }
 

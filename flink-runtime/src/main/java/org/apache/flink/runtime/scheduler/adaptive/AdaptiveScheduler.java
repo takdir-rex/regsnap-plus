@@ -589,12 +589,12 @@ public class AdaptiveScheduler
 
     @Override
     public CompletableFuture<String> triggerSavepoint(
-            @Nullable String targetDirectory, boolean cancelJob) {
+            @Nullable String targetDirectory, boolean cancelJob, @Nullable String snapshotGroup) {
         return state.tryCall(
                         StateWithExecutionGraph.class,
                         stateWithExecutionGraph ->
                                 stateWithExecutionGraph.triggerSavepoint(
-                                        targetDirectory, cancelJob),
+                                        targetDirectory, cancelJob, snapshotGroup),
                         "triggerSavepoint")
                 .orElse(
                         FutureUtils.completedExceptionally(

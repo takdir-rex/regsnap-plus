@@ -211,7 +211,7 @@ public class SavepointHandlers
                             ? requestedTargetDirectory
                             : defaultSavepointDir;
             return gateway.triggerSavepoint(
-                    jobId, targetDirectory, cancelJob, RpcUtils.INF_TIMEOUT);
+                    jobId, targetDirectory, cancelJob, null, RpcUtils.INF_TIMEOUT);
         }
     }
 

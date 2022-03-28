@@ -681,10 +681,11 @@ public abstract class Dispatcher extends PermanentlyFencedRpcEndpoint<Dispatcher
             final JobID jobId,
             final String targetDirectory,
             final boolean cancelJob,
+            final String snapshotGroup,
             final Time timeout) {
 
         return performOperationOnJobMasterGateway(
-                jobId, gateway -> gateway.triggerSavepoint(targetDirectory, cancelJob, timeout));
+                jobId, gateway -> gateway.triggerSavepoint(targetDirectory, cancelJob, snapshotGroup, timeout));
     }
 
     @Override

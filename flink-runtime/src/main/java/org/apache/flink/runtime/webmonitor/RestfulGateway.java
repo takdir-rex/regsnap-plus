@@ -136,12 +136,13 @@ public interface RestfulGateway extends RpcGateway {
      *
      * @param jobId ID of the job for which the savepoint should be triggered.
      * @param targetDirectory Target directory for the savepoint.
+     * @param snapshotGroup targeted snapshot group
      * @param timeout Timeout for the asynchronous operation
      * @return A future to the {@link CompletedCheckpoint#getExternalPointer() external pointer} of
      *     the savepoint.
      */
     default CompletableFuture<String> triggerSavepoint(
-            JobID jobId, String targetDirectory, boolean cancelJob, @RpcTimeout Time timeout) {
+            JobID jobId, String targetDirectory, boolean cancelJob, String snapshotGroup, @RpcTimeout Time timeout) {
         throw new UnsupportedOperationException();
     }
 

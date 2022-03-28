@@ -227,11 +227,13 @@ public interface JobMasterGateway
      * @param targetDirectory to which to write the savepoint data or null if the default savepoint
      *     directory should be used
      * @param timeout for the rpc call
+     * @param snapshotGroup targeted snapshot group
      * @return Future which is completed with the savepoint path once completed
      */
     CompletableFuture<String> triggerSavepoint(
             @Nullable final String targetDirectory,
             final boolean cancelJob,
+            @Nullable final String snapshotGroup,
             @RpcTimeout final Time timeout);
 
     /**

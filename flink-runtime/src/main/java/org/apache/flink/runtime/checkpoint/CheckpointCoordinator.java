@@ -436,15 +436,16 @@ public class CheckpointCoordinator {
      *
      * @param targetLocation Target location for the savepoint, optional. If null, the state
      *     backend's configured default will be used.
+     * @param snapshotGroup targeted snapshot group
      * @return A future to the completed checkpoint
      * @throws IllegalStateException If no savepoint directory has been specified and no default
      *     savepoint directory has been configured
      */
     public CompletableFuture<CompletedCheckpoint> triggerSavepoint(
-            @Nullable final String targetLocation) {
+            @Nullable final String targetLocation, @Nullable final String snapshotGroup) {
         final CheckpointProperties properties =
                 CheckpointProperties.forSavepoint(!unalignedCheckpointsEnabled);
-        return triggerSavepointInternal(properties, targetLocation);
+        return triggerSavepointInternal(properties, targetLocation, snapshotGroup);
     }
 
     /**
@@ -458,17 +459,17 @@ public class CheckpointCoordinator {
      *     savepoint directory has been configured
      */
     public CompletableFuture<CompletedCheckpoint> triggerSynchronousSavepoint(
-            final boolean terminate, @Nullable final String targetLocation) {
+            final boolean terminate, @Nullable final String targetLocation, @Nullable final String snapshotGroup) {
 
         final CheckpointProperties properties =
                 CheckpointProperties.forSyncSavepoint(!unalignedCheckpointsEnabled, terminate);
 
-        return triggerSavepointInternal(properties, targetLocation);
+        return triggerSavepointInternal(properties, targetLocation, snapshotGroup);
     }
 
     private CompletableFuture<CompletedCheckpoint> triggerSavepointInternal(
             final CheckpointProperties checkpointProperties,
-            @Nullable final String targetLocation) {
+            @Nullable final String targetLocation, @Nullable final String snapshotGroup) {
 
         checkNotNull(checkpointProperties);
 
@@ -477,7 +478,7 @@ public class CheckpointCoordinator {
         final CompletableFuture<CompletedCheckpoint> resultFuture = new CompletableFuture<>();
         timer.execute(
                 () ->
-                        triggerCheckpoint(checkpointProperties, targetLocation, false)
+                        triggerCheckpoint(checkpointProperties, targetLocation, snapshotGroup, false)
                                 .whenComplete(
                                         (completedCheckpoint, throwable) -> {
                                             if (throwable == null) {
@@ -499,13 +500,15 @@ public class CheckpointCoordinator {
      * @return a future to the completed checkpoint.
      */
     public CompletableFuture<CompletedCheckpoint> triggerCheckpoint(boolean isPeriodic) {
-        return triggerCheckpoint(checkpointProperties, null, isPeriodic);
+        // snapshotGroup = null. Snapshot group is enabled for savepoint only for now
+        return triggerCheckpoint(checkpointProperties, null, null, isPeriodic);
     }
 
     @VisibleForTesting
     public CompletableFuture<CompletedCheckpoint> triggerCheckpoint(
             CheckpointProperties props,
             @Nullable String externalSavepointLocation,
+            @Nullable String snapshotGroup,
             boolean isPeriodic) {
 
         if (props.getCheckpointType().getPostCheckpointAction() == PostCheckpointAction.TERMINATE
@@ -516,7 +519,7 @@ public class CheckpointCoordinator {
         }
 
         CheckpointTriggerRequest request =
-                new CheckpointTriggerRequest(props, externalSavepointLocation, isPeriodic);
+                new CheckpointTriggerRequest(props, externalSavepointLocation, snapshotGroup, isPeriodic);
         chooseRequestToExecute(request).ifPresent(this::startTriggeringCheckpoint);
         return request.onCompletionPromise;
     }
@@ -719,10 +722,11 @@ public class CheckpointCoordinator {
      *
      * @param props checkpoint properties
      * @param externalSavepointLocation the external savepoint location, it might be null
+     * @param snapshotGroup targeted snapshot group
      * @return the initialized result, checkpoint id and checkpoint location
      */
     private CheckpointIdAndStorageLocation initializeCheckpoint(
-            CheckpointProperties props, @Nullable String externalSavepointLocation)
+            CheckpointProperties props, @Nullable String externalSavepointLocation, @Nullable String snapshotGroup)
             throws Exception {
 
         // this must happen outside the coordinator-wide lock, because it
@@ -2041,6 +2045,7 @@ public class CheckpointCoordinator {
         final long timestamp;
         final CheckpointProperties props;
         final @Nullable String externalSavepointLocation;
+        final @Nullable String snapshotGroup;
         final boolean isPeriodic;
         private final CompletableFuture<CompletedCheckpoint> onCompletionPromise =
                 new CompletableFuture<>();
@@ -2048,11 +2053,13 @@ public class CheckpointCoordinator {
         CheckpointTriggerRequest(
                 CheckpointProperties props,
                 @Nullable String externalSavepointLocation,
+                @Nullable String snapshotGroup,
                 boolean isPeriodic) {
 
             this.timestamp = System.currentTimeMillis();
             this.props = checkNotNull(props);
             this.externalSavepointLocation = externalSavepointLocation;
+            this.snapshotGroup = snapshotGroup;
             this.isPeriodic = isPeriodic;
         }
 

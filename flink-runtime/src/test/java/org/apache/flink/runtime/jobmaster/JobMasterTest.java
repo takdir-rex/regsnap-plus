@@ -1484,9 +1484,9 @@ public class JobMasterTest extends TestLogger {
             final JobMasterGateway jobMasterGateway =
                     jobMaster.getSelfGateway(JobMasterGateway.class);
             final CompletableFuture<String> savepointFutureLowTimeout =
-                    jobMasterGateway.triggerSavepoint("/tmp", false, Time.milliseconds(1));
+                    jobMasterGateway.triggerSavepoint("/tmp", false, null, Time.milliseconds(1));
             final CompletableFuture<String> savepointFutureHighTimeout =
-                    jobMasterGateway.triggerSavepoint("/tmp", false, RpcUtils.INF_TIMEOUT);
+                    jobMasterGateway.triggerSavepoint("/tmp", false, null, RpcUtils.INF_TIMEOUT);
 
             try {
                 savepointFutureLowTimeout.get(testingTimeout.getSize(), testingTimeout.getUnit());

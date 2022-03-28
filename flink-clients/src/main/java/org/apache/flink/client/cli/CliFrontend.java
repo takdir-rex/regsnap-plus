@@ -742,8 +742,15 @@ public class CliFrontend {
                 savepointDirectory = null;
             }
 
-            // Print superfluous arguments
+            final String snapshotGroup;
             if (cleanedArgs.length >= 3) {
+                snapshotGroup = cleanedArgs[2];
+            } else {
+                snapshotGroup = null;
+            }
+
+            // Print superfluous arguments
+            if (cleanedArgs.length >= 4) {
                 logAndSysout(
                         "Provided more arguments than required. Ignoring not needed arguments.");
             }
@@ -751,18 +758,18 @@ public class CliFrontend {
             runClusterAction(
                     activeCommandLine,
                     commandLine,
-                    clusterClient -> triggerSavepoint(clusterClient, jobId, savepointDirectory));
+                    clusterClient -> triggerSavepoint(clusterClient, jobId, savepointDirectory, snapshotGroup));
         }
     }
 
     /** Sends a SavepointTriggerMessage to the job manager. */
     private void triggerSavepoint(
-            ClusterClient<?> clusterClient, JobID jobId, String savepointDirectory)
+            ClusterClient<?> clusterClient, JobID jobId, String savepointDirectory, String snapshotGroup)
             throws FlinkException {
         logAndSysout("Triggering savepoint for job " + jobId + '.');
 
         CompletableFuture<String> savepointPathFuture =
-                clusterClient.triggerSavepoint(jobId, savepointDirectory);
+                clusterClient.triggerSavepoint(jobId, savepointDirectory, snapshotGroup);
 
         logAndSysout("Waiting for response...");
 

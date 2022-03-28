@@ -32,6 +32,8 @@ public class SavepointTriggerRequestBody implements RequestBody {
 
     private static final String FIELD_NAME_CANCEL_JOB = "cancel-job";
 
+    private static final String FIELD_NAME_SNAPSHOT_GROUP = "snapshot-group";
+
     @JsonProperty(FIELD_NAME_TARGET_DIRECTORY)
     @Nullable
     private final String targetDirectory;
@@ -39,12 +41,17 @@ public class SavepointTriggerRequestBody implements RequestBody {
     @JsonProperty(FIELD_NAME_CANCEL_JOB)
     private final boolean cancelJob;
 
+    @JsonProperty(FIELD_NAME_SNAPSHOT_GROUP)
+    @Nullable
+    private final String snapshotGroup;
+
     @JsonCreator
     public SavepointTriggerRequestBody(
             @Nullable @JsonProperty(FIELD_NAME_TARGET_DIRECTORY) final String targetDirectory,
-            @Nullable @JsonProperty(FIELD_NAME_CANCEL_JOB) final Boolean cancelJob) {
+            @Nullable @JsonProperty(FIELD_NAME_CANCEL_JOB) final Boolean cancelJob, @Nullable @JsonProperty(FIELD_NAME_SNAPSHOT_GROUP) final String snapshotGroup) {
         this.targetDirectory = targetDirectory;
         this.cancelJob = cancelJob != null ? cancelJob : false;
+        this.snapshotGroup = snapshotGroup;
     }
 
     @Nullable
@@ -54,5 +61,10 @@ public class SavepointTriggerRequestBody implements RequestBody {
 
     public boolean isCancelJob() {
         return cancelJob;
+    }
+
+    @Nullable
+    public String getSnapshotGroup() {
+        return snapshotGroup;
     }
 }

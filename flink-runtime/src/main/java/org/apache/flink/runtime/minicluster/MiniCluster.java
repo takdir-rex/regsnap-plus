@@ -738,11 +738,11 @@ public class MiniCluster implements AutoCloseableAsync {
     }
 
     public CompletableFuture<String> triggerSavepoint(
-            JobID jobId, String targetDirectory, boolean cancelJob) {
+            JobID jobId, String targetDirectory, boolean cancelJob, String snapshotGroup) {
         return runDispatcherCommand(
                 dispatcherGateway ->
                         dispatcherGateway.triggerSavepoint(
-                                jobId, targetDirectory, cancelJob, rpcTimeout));
+                                jobId, targetDirectory, cancelJob, snapshotGroup, rpcTimeout));
     }
 
     public CompletableFuture<String> stopWithSavepoint(

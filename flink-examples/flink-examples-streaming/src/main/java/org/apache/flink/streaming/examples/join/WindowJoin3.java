@@ -149,10 +149,10 @@ public class WindowJoin3 {
         // print the results with a single thread, rather than in parallel
         joinedStream.print().setParallelism(1).uid("Sink");
 
-        System.out.println("### " + env.getExecutionPlan());
+//        System.out.println(env.getExecutionPlan());
 
         // execute program
-        //env.execute("Windowed Join Example");
+        env.execute("Windowed Join Example");
     }
 
     public static DataStream<Tuple3<String, Integer, Integer>> runWindowJoin(
