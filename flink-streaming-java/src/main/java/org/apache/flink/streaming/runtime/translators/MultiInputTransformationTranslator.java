@@ -97,12 +97,14 @@ public class MultiInputTransformationTranslator<OUT>
 
         final StreamGraph streamGraph = context.getStreamGraph();
         final String slotSharingGroup = context.getSlotSharingGroup();
+        final String snapshotGroup = context.getSnapshotGroup();
         final int transformationId = transformation.getId();
         final ExecutionConfig executionConfig = streamGraph.getExecutionConfig();
 
         streamGraph.addMultipleInputOperator(
                 transformationId,
                 slotSharingGroup,
+                snapshotGroup,
                 transformation.getCoLocationGroupKey(),
                 transformation.getOperatorFactory(),
                 transformation.getInputTypes(),

@@ -99,6 +99,8 @@ public class ExecutionJobVertex
 
     private final SlotSharingGroup slotSharingGroup;
 
+    private final String snapshotGroup;
+
     @Nullable private final CoLocationGroup coLocationGroup;
 
     private final InputSplit[] inputSplits;
@@ -116,8 +118,6 @@ public class ExecutionJobVertex
     private final Collection<OperatorCoordinatorHolder> operatorCoordinators;
 
     private InputSplitAssigner splitAssigner;
-
-    private final String snapshotGroup;
 
     @VisibleForTesting
     public ExecutionJobVertex(
@@ -159,6 +159,8 @@ public class ExecutionJobVertex
         // take the sharing group
         this.slotSharingGroup = checkNotNull(jobVertex.getSlotSharingGroup());
         this.coLocationGroup = jobVertex.getCoLocationGroup();
+
+        this.snapshotGroup = jobVertex.getSnapshotGroup();
 
         // create the intermediate results
         this.producedDataSets =
@@ -321,6 +323,8 @@ public class ExecutionJobVertex
     public SlotSharingGroup getSlotSharingGroup() {
         return slotSharingGroup;
     }
+
+    public String getSnapshotGroup() { return snapshotGroup; }
 
     @Nullable
     public CoLocationGroup getCoLocationGroup() {

@@ -303,6 +303,7 @@ public class StreamGraph implements Pipeline {
     public <IN, OUT> void addSource(
             Integer vertexID,
             @Nullable String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             SourceOperatorFactory<OUT> operatorFactory,
             TypeInformation<IN> inTypeInfo,
@@ -311,6 +312,7 @@ public class StreamGraph implements Pipeline {
         addOperator(
                 vertexID,
                 slotSharingGroup,
+                snapshotGroup,
                 coLocationGroup,
                 operatorFactory,
                 inTypeInfo,
@@ -323,6 +325,7 @@ public class StreamGraph implements Pipeline {
     public <IN, OUT> void addLegacySource(
             Integer vertexID,
             @Nullable String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             StreamOperatorFactory<OUT> operatorFactory,
             TypeInformation<IN> inTypeInfo,
@@ -331,6 +334,7 @@ public class StreamGraph implements Pipeline {
         addOperator(
                 vertexID,
                 slotSharingGroup,
+                snapshotGroup,
                 coLocationGroup,
                 operatorFactory,
                 inTypeInfo,
@@ -342,6 +346,7 @@ public class StreamGraph implements Pipeline {
     public <IN, OUT> void addSink(
             Integer vertexID,
             @Nullable String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             StreamOperatorFactory<OUT> operatorFactory,
             TypeInformation<IN> inTypeInfo,
@@ -350,6 +355,7 @@ public class StreamGraph implements Pipeline {
         addOperator(
                 vertexID,
                 slotSharingGroup,
+                snapshotGroup,
                 coLocationGroup,
                 operatorFactory,
                 inTypeInfo,
@@ -365,6 +371,7 @@ public class StreamGraph implements Pipeline {
     public <IN, OUT> void addOperator(
             Integer vertexID,
             @Nullable String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             StreamOperatorFactory<OUT> operatorFactory,
             TypeInformation<IN> inTypeInfo,
@@ -377,6 +384,7 @@ public class StreamGraph implements Pipeline {
         addOperator(
                 vertexID,
                 slotSharingGroup,
+                snapshotGroup,
                 coLocationGroup,
                 operatorFactory,
                 inTypeInfo,
@@ -388,6 +396,7 @@ public class StreamGraph implements Pipeline {
     private <IN, OUT> void addOperator(
             Integer vertexID,
             @Nullable String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             StreamOperatorFactory<OUT> operatorFactory,
             TypeInformation<IN> inTypeInfo,
@@ -398,6 +407,7 @@ public class StreamGraph implements Pipeline {
         addNode(
                 vertexID,
                 slotSharingGroup,
+                snapshotGroup,
                 coLocationGroup,
                 invokableClass,
                 operatorFactory,
@@ -421,6 +431,7 @@ public class StreamGraph implements Pipeline {
     public <IN1, IN2, OUT> void addCoOperator(
             Integer vertexID,
             String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             StreamOperatorFactory<OUT> taskOperatorFactory,
             TypeInformation<IN1> in1TypeInfo,
@@ -433,6 +444,7 @@ public class StreamGraph implements Pipeline {
         addNode(
                 vertexID,
                 slotSharingGroup,
+                snapshotGroup,
                 coLocationGroup,
                 vertexClass,
                 taskOperatorFactory,
@@ -459,6 +471,7 @@ public class StreamGraph implements Pipeline {
     public <OUT> void addMultipleInputOperator(
             Integer vertexID,
             String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             StreamOperatorFactory<OUT> operatorFactory,
             List<TypeInformation<?>> inTypeInfos,
@@ -470,6 +483,7 @@ public class StreamGraph implements Pipeline {
         addNode(
                 vertexID,
                 slotSharingGroup,
+                snapshotGroup,
                 coLocationGroup,
                 vertexClass,
                 operatorFactory,
@@ -490,6 +504,7 @@ public class StreamGraph implements Pipeline {
     protected StreamNode addNode(
             Integer vertexID,
             @Nullable String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             Class<? extends TaskInvokable> vertexClass,
             StreamOperatorFactory<?> operatorFactory,
@@ -503,6 +518,7 @@ public class StreamGraph implements Pipeline {
                 new StreamNode(
                         vertexID,
                         slotSharingGroup,
+                        snapshotGroup,
                         coLocationGroup,
                         operatorFactory,
                         operatorName,
@@ -879,6 +895,7 @@ public class StreamGraph implements Pipeline {
                 this.addNode(
                         sourceId,
                         null,
+                        null,
                         coLocationGroup,
                         StreamIterationHead.class,
                         null,
@@ -891,6 +908,7 @@ public class StreamGraph implements Pipeline {
         StreamNode sink =
                 this.addNode(
                         sinkId,
+                        null,
                         null,
                         coLocationGroup,
                         StreamIterationTail.class,

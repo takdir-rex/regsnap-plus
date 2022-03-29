@@ -236,11 +236,13 @@ public class SinkTransformationTranslator<InputT, CommT, WriterStateT, GlobalCom
             Context context) {
         final StreamGraph streamGraph = context.getStreamGraph();
         final String slotSharingGroup = context.getSlotSharingGroup();
+        final String snapshotGroup = context.getSnapshotGroup();
         final int transformationId = Transformation.getNewNodeId();
 
         streamGraph.addOperator(
                 transformationId,
                 slotSharingGroup,
+                snapshotGroup,
                 sinkTransformation.getCoLocationGroupKey(),
                 operatorFactory,
                 inTypeInfo,

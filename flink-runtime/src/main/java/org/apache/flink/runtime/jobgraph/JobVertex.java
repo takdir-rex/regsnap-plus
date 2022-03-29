@@ -118,9 +118,6 @@ public class JobVertex implements java.io.Serializable {
      */
     @Nullable private SlotSharingGroup slotSharingGroup;
 
-    /**
-     * Optionally, a snapshot group of this vertex
-     */
     @Nullable private String snapshotGroup;
 
     /** The group inside which the vertex subtasks share slots. */
@@ -587,5 +584,17 @@ public class JobVertex implements java.io.Serializable {
     @Override
     public String toString() {
         return this.name + " (" + this.invokableClassName + ')';
+    }
+
+    /**
+     * Optionally, a snapshot group of this vertex
+     */
+    @Nullable
+    public String getSnapshotGroup() {
+        return snapshotGroup;
+    }
+
+    public void setSnapshotGroup(@Nullable String snapshotGroup) {
+        this.snapshotGroup = snapshotGroup;
     }
 }

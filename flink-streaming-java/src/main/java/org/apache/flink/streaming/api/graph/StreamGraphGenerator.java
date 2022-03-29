@@ -814,7 +814,7 @@ public class StreamGraphGenerator {
                                 .collect(Collectors.toList()));
 
         final TransformationTranslator.Context context =
-                new ContextImpl(this, streamGraph, slotSharingGroup, configuration);
+                new ContextImpl(this, streamGraph, slotSharingGroup, transform.getSnapshotGroup(), configuration);
 
         return shouldExecuteInBatchMode
                 ? translator.translateForBatch(transform, context)
@@ -880,16 +880,20 @@ public class StreamGraphGenerator {
 
         private final String slotSharingGroup;
 
+        private final String snapshotGroup;
+
         private final ReadableConfig config;
 
         public ContextImpl(
                 final StreamGraphGenerator streamGraphGenerator,
                 final StreamGraph streamGraph,
                 final String slotSharingGroup,
+                final @Nullable String snapshotGroup,
                 final ReadableConfig config) {
             this.streamGraphGenerator = checkNotNull(streamGraphGenerator);
             this.streamGraph = checkNotNull(streamGraph);
             this.slotSharingGroup = checkNotNull(slotSharingGroup);
+            this.snapshotGroup = snapshotGroup;
             this.config = checkNotNull(config);
         }
 
@@ -912,6 +916,11 @@ public class StreamGraphGenerator {
         @Override
         public String getSlotSharingGroup() {
             return slotSharingGroup;
+        }
+
+        @Override
+        public String getSnapshotGroup() {
+            return snapshotGroup;
         }
 
         @Override

@@ -624,6 +624,8 @@ public class StreamingJobGraphGenerator {
             LOG.debug("Parallelism set: {} for {}", parallelism, streamNodeId);
         }
 
+        jobVertex.setSnapshotGroup(streamNode.getSnapshotGroup());
+
         jobVertices.put(streamNodeId, jobVertex);
         builtVertices.add(streamNodeId);
         jobGraph.addVertex(jobVertex);

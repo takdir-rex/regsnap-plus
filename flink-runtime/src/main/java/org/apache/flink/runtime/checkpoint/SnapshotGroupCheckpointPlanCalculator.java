@@ -62,7 +62,8 @@ public class SnapshotGroupCheckpointPlanCalculator implements CheckpointPlanCalc
             JobID jobId,
             CheckpointPlanCalculatorContext context,
             Iterable<ExecutionJobVertex> jobVerticesInTopologyOrderIterable,
-            boolean allowCheckpointsAfterTasksFinished, final String snapshotGroup) {
+            boolean allowCheckpointsAfterTasksFinished,
+            final String snapshotGroup) {
 
         this.jobId = checkNotNull(jobId);
         this.context = checkNotNull(context);
@@ -72,11 +73,15 @@ public class SnapshotGroupCheckpointPlanCalculator implements CheckpointPlanCalc
         checkNotNull(jobVerticesInTopologyOrderIterable);
         jobVerticesInTopologyOrderIterable.forEach(
                 jobVertex -> {
-                    jobVerticesInTopologyOrder.add(jobVertex);
-                    allTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-
-                    if (jobVertex.getJobVertex().isInputVertex()) {
-                        sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+                    if(jobVertex.getSnapshotGroup() != null){
+                        if(jobVertex.getSnapshotGroup().equals(snapshotGroup)){
+                            jobVerticesInTopologyOrder.add(jobVertex);
+                            allTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+                            jobVertex.getJobVertex().getInputs().get(0).
+                            if (jobVertex.getJobVertex().hasNoConnectedInputs().isInputVertex()) {
+                                sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+                            }
+                        }
                     }
                 });
 

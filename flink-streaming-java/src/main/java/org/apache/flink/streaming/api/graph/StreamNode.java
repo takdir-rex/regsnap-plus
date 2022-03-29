@@ -66,6 +66,7 @@ public class StreamNode {
     private long bufferTimeout;
     private final String operatorName;
     private @Nullable String slotSharingGroup;
+    private @Nullable String snapshotGroup;
     private @Nullable String coLocationGroup;
     private KeySelector<?, ?>[] statePartitioners = new KeySelector[0];
     private TypeSerializer<?> stateKeySerializer;
@@ -91,6 +92,7 @@ public class StreamNode {
     public StreamNode(
             Integer id,
             @Nullable String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             StreamOperator<?> operator,
             String operatorName,
@@ -98,6 +100,7 @@ public class StreamNode {
         this(
                 id,
                 slotSharingGroup,
+                snapshotGroup,
                 coLocationGroup,
                 SimpleOperatorFactory.of(operator),
                 operatorName,
@@ -107,6 +110,7 @@ public class StreamNode {
     public StreamNode(
             Integer id,
             @Nullable String slotSharingGroup,
+            @Nullable String snapshotGroup,
             @Nullable String coLocationGroup,
             StreamOperatorFactory<?> operatorFactory,
             String operatorName,
@@ -116,6 +120,7 @@ public class StreamNode {
         this.operatorFactory = operatorFactory;
         this.jobVertexClass = jobVertexClass;
         this.slotSharingGroup = slotSharingGroup;
+        this.snapshotGroup = snapshotGroup;
         this.coLocationGroup = coLocationGroup;
     }
 
@@ -292,6 +297,15 @@ public class StreamNode {
         return slotSharingGroup;
     }
 
+    public void setSnapshotGroup(@Nullable String snapshotGroup) {
+        this.snapshotGroup = snapshotGroup;
+    }
+
+    @Nullable
+    public String getSnapshotGroup() {
+        return snapshotGroup;
+    }
+
     public void setCoLocationGroup(@Nullable String coLocationGroup) {
         this.coLocationGroup = coLocationGroup;
     }
@@ -304,6 +318,12 @@ public class StreamNode {
         return (slotSharingGroup == null && downstreamVertex.slotSharingGroup == null)
                 || (slotSharingGroup != null
                         && slotSharingGroup.equals(downstreamVertex.slotSharingGroup));
+    }
+
+    public boolean isSameSnapshotGroup(StreamNode downstreamVertex) {
+        return (snapshotGroup == null && downstreamVertex.snapshotGroup == null)
+                || (snapshotGroup != null
+                && snapshotGroup.equals(downstreamVertex.snapshotGroup));
     }
 
     @Override

@@ -79,6 +79,9 @@ public interface TransformationTranslator<OUT, T extends Transformation<OUT>> {
         /** Returns the slot sharing group for the given transformation. */
         String getSlotSharingGroup();
 
+        /** Returns the snapshot group for the given transformation. */
+        String getSnapshotGroup();
+
         /** Returns the default buffer timeout to be used. */
         long getDefaultBufferTimeout();
 
