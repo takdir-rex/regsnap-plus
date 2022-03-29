@@ -30,13 +30,7 @@ import org.apache.flink.runtime.jobgraph.IntermediateResultPartitionID;
 import org.apache.flink.runtime.jobgraph.JobEdge;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
@@ -48,7 +42,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
  * directly marks all the sources as tasks to trigger, otherwise it would try to find the running
  * tasks without running processors as tasks to trigger.
  */
-public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator {
+public class SnapshotGroupCheckpointPlanCalculator implements CheckpointPlanCalculator {
 
     private final JobID jobId;
 
@@ -62,15 +56,18 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
 
     private final boolean allowCheckpointsAfterTasksFinished;
 
-    public DefaultCheckpointPlanCalculator(
+    private final String snapshotGroup;
+
+    public SnapshotGroupCheckpointPlanCalculator(
             JobID jobId,
             CheckpointPlanCalculatorContext context,
             Iterable<ExecutionJobVertex> jobVerticesInTopologyOrderIterable,
-            boolean allowCheckpointsAfterTasksFinished) {
+            boolean allowCheckpointsAfterTasksFinished, final String snapshotGroup) {
 
         this.jobId = checkNotNull(jobId);
         this.context = checkNotNull(context);
         this.allowCheckpointsAfterTasksFinished = allowCheckpointsAfterTasksFinished;
+        this.snapshotGroup = checkNotNull(snapshotGroup);
 
         checkNotNull(jobVerticesInTopologyOrderIterable);
         jobVerticesInTopologyOrderIterable.forEach(
@@ -82,6 +79,23 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
                         sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
                     }
                 });
+
+        //        jobVerticesInTopologyOrderIterable.forEach(
+        //                jobVertex -> {
+        //                    jobVerticesInTopologyOrder.add(jobVertex);
+        ////                    allTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+        //
+        //                    if (jobVertex.getJobVertex().isInputVertex()) {
+        ////                        sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+        //                    } else {
+        //                        // Trigger checkpoint form intermediate operators
+        //                        allTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+        //                        if(!jobVertex.getJobVertex().isOutputVertex()){
+        //
+        // sourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+        //                        }
+        //                    }
+        //                });
     }
 
     @Override

@@ -96,14 +96,14 @@ public class WindowJoin2 {
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1b");
+                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1b").name("");
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
         DataStream<Tuple3<String, Integer, Integer>> joinedStream =
                 runWindowJoin(grades, salaries, windowSize);
 
-        ((SingleOutputStreamOperator) joinedStream).uid("join");
+        ((SingleOutputStreamOperator) joinedStream).uid("join").slotSharingGroup("");
 
         // print the results with a single thread, rather than in parallel
         joinedStream.print().setParallelism(1).uid("Sink");

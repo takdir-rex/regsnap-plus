@@ -172,6 +172,8 @@ public abstract class Transformation<T> {
 
     @Nullable private String coLocationGroupKey;
 
+    @Nullable private String snapshotGroup;
+
     /**
      * Creates a new {@code Transformation} with the given name, output type and parallelism.
      *
@@ -426,6 +428,23 @@ public abstract class Transformation<T> {
      */
     public void setSlotSharingGroup(SlotSharingGroup slotSharingGroup) {
         this.slotSharingGroup = Optional.of(slotSharingGroup);
+    }
+
+    /**
+     * Set the snapshot group of this transformation. Parallel instances of operations that are
+     * in the same snapshot group will be grouped in the same snapshot region.
+     * @param snapshotGroup the snapshot group name of this transformation
+     */
+    public void setSnapshotGroup(@Nullable String snapshotGroup) {
+        this.snapshotGroup = snapshotGroup;
+    }
+
+    /**
+     * Returns the snapshot group of this transformation
+     * @return the snapshot group name of this transformation
+     */
+    public String getSnapshotGroup(){
+        return this.snapshotGroup;
     }
 
     /**
