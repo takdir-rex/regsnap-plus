@@ -503,7 +503,7 @@ public class SavepointITCase extends TestLogger {
             // triggerSavepoint is only available after all tasks are running
             waitForAllTaskRunning(cluster.getMiniCluster(), graph.getJobID(), false);
 
-            client.triggerSavepoint(graph.getJobID(), null).get();
+            client.triggerSavepoint(graph.getJobID(), null, null).get();
 
             fail();
         } catch (ExecutionException e) {

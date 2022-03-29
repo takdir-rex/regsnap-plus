@@ -117,6 +117,8 @@ public class ExecutionJobVertex
 
     private InputSplitAssigner splitAssigner;
 
+    private final String snapshotGroup;
+
     @VisibleForTesting
     public ExecutionJobVertex(
             InternalExecutionGraphAccessor graph,

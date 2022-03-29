@@ -118,6 +118,11 @@ public class JobVertex implements java.io.Serializable {
      */
     @Nullable private SlotSharingGroup slotSharingGroup;
 
+    /**
+     * Optionally, a snapshot group of this vertex
+     */
+    @Nullable private String snapshotGroup;
+
     /** The group inside which the vertex subtasks share slots. */
     @Nullable private CoLocationGroupImpl coLocationGroup;
 

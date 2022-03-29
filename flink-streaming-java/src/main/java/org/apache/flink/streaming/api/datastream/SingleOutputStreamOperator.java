@@ -393,6 +393,16 @@ public class SingleOutputStreamOperator<T> extends DataStream<T> {
     }
 
     /**
+     * Sets the snapshot group of this operation
+     * @param snapshotGroup The snapshot group name
+     */
+    @PublicEvolving
+    public SingleOutputStreamOperator<T> snapshotGroup(String snapshotGroup) {
+        transformation.setSnapshotGroup(snapshotGroup);
+        return this;
+    }
+
+    /**
      * Gets the {@link DataStream} that contains the elements that are emitted from an operation
      * into the side output with the given {@link OutputTag}.
      *
