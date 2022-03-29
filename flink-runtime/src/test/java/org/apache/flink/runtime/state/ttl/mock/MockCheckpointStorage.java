@@ -84,7 +84,7 @@ public class MockCheckpointStorage implements CheckpointStorage {
 
             @Override
             public CheckpointStorageLocation initializeLocationForSavepoint(
-                    long checkpointId, @Nullable String externalLocationPointer) {
+                    long checkpointId, @Nullable String externalLocationPointer, @Nullable String snapshotGroup) {
                 return null;
             }
 

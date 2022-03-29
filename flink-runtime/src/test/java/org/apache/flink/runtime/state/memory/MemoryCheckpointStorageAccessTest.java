@@ -168,7 +168,7 @@ public class MemoryCheckpointStorageAccessTest extends AbstractFileCheckpointSto
                     new MemoryBackendCheckpointStorageAccess(
                             new JobID(), null, null, DEFAULT_MAX_STATE_SIZE);
             CheckpointStorageLocation location =
-                    storage.initializeLocationForSavepoint(1337, randomTempPath().toString());
+                    storage.initializeLocationForSavepoint(1337, randomTempPath().toString(), null);
             assertTrue(location.getLocationReference().isDefaultReference());
         }
     }

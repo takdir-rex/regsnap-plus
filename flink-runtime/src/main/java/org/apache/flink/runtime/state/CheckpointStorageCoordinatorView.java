@@ -94,10 +94,11 @@ public interface CheckpointStorageCoordinatorView {
      * @param checkpointId The ID (logical timestamp) of the savepoint's checkpoint.
      * @param externalLocationPointer Optionally, a pointer to the location where the savepoint
      *     should be stored. May be null.
+     * @param snapshotGroup targeted snapshot group
      * @return A storage location for the data and metadata of the savepoint.
      * @throws IOException Thrown if the storage location cannot be initialized due to an I/O
      *     exception.
      */
     CheckpointStorageLocation initializeLocationForSavepoint(
-            long checkpointId, @Nullable String externalLocationPointer) throws IOException;
+            long checkpointId, @Nullable String externalLocationPointer, @Nullable String snapshotGroup) throws IOException;
 }

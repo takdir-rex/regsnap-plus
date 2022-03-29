@@ -555,7 +555,7 @@ public class DispatcherTest extends AbstractDispatcherTest {
 
         final CheckpointStorageLocation checkpointStorageLocation =
                 checkpointStorage.initializeLocationForSavepoint(
-                        checkpointId, savepointFile.getAbsolutePath());
+                        checkpointId, savepointFile.getAbsolutePath(), null);
 
         final CheckpointMetadataOutputStream metadataOutputStream =
                 checkpointStorageLocation.createMetadataOutputStream();

@@ -88,7 +88,7 @@ public class FsCheckpointStorageAccessTest extends AbstractFileCheckpointStorage
                         WRITE_BUFFER_SIZE);
 
         final FsCheckpointStorageLocation savepointLocation =
-                (FsCheckpointStorageLocation) storage.initializeLocationForSavepoint(52452L, null);
+                (FsCheckpointStorageLocation) storage.initializeLocationForSavepoint(52452L, null, null);
 
         // all state types should be in the expected location
         assertParent(defaultSavepointDir, savepointLocation.getCheckpointDirectory());
@@ -113,7 +113,7 @@ public class FsCheckpointStorageAccessTest extends AbstractFileCheckpointStorage
 
         final FsCheckpointStorageLocation savepointLocation =
                 (FsCheckpointStorageLocation)
-                        storage.initializeLocationForSavepoint(52452L, savepointDir.toString());
+                        storage.initializeLocationForSavepoint(52452L, savepointDir.toString(), null);
 
         // all state types should be in the expected location
         assertParent(savepointDir, savepointLocation.getCheckpointDirectory());

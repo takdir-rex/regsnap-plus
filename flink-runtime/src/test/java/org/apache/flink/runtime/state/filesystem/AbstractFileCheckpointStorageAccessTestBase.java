@@ -267,7 +267,7 @@ public abstract class AbstractFileCheckpointStorageAccessTestBase {
         final CheckpointStorageAccess storage = createCheckpointStorage(randomTempPath());
 
         try {
-            storage.initializeLocationForSavepoint(1337, null);
+            storage.initializeLocationForSavepoint(1337, null, null);
             fail("this should fail with an exception");
         } catch (IllegalArgumentException ignored) {
         }
@@ -285,7 +285,7 @@ public abstract class AbstractFileCheckpointStorageAccessTestBase {
         final String customLocation = customDir == null ? null : customDir.toString();
 
         final CheckpointStorageLocation savepointLocation =
-                storage.initializeLocationForSavepoint(52452L, customLocation);
+                storage.initializeLocationForSavepoint(52452L, customLocation, null);
 
         final byte[] data = {77, 66, 55, 99, 88};
 

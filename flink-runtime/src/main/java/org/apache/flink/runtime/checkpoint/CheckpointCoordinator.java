@@ -548,7 +548,8 @@ public class CheckpointCoordinator {
                                                     checkpointIdAndStorageLocation =
                                                             initializeCheckpoint(
                                                                     request.props,
-                                                                    request.externalSavepointLocation);
+                                                                    request.externalSavepointLocation,
+                                                                    request.snapshotGroup);
                                             return new Tuple2<>(
                                                     plan, checkpointIdAndStorageLocation);
                                         } catch (Throwable e) {
@@ -737,7 +738,7 @@ public class CheckpointCoordinator {
         CheckpointStorageLocation checkpointStorageLocation =
                 props.isSavepoint()
                         ? checkpointStorageView.initializeLocationForSavepoint(
-                                checkpointID, externalSavepointLocation)
+                                checkpointID, externalSavepointLocation, snapshotGroup)
                         : checkpointStorageView.initializeLocationForCheckpoint(checkpointID);
 
         return new CheckpointIdAndStorageLocation(checkpointID, checkpointStorageLocation);
