@@ -121,6 +121,7 @@ public class TwoInputStreamTaskTestHarness<IN1, IN2, OUT> extends StreamTaskTest
                         0,
                         "default group",
                         null,
+                        null,
                         dummyOperator,
                         "source dummy",
                         SourceStreamTask.class);
@@ -128,6 +129,7 @@ public class TwoInputStreamTaskTestHarness<IN1, IN2, OUT> extends StreamTaskTest
                 new StreamNode(
                         1,
                         "default group",
+                        null,
                         null,
                         dummyOperator,
                         "target dummy",

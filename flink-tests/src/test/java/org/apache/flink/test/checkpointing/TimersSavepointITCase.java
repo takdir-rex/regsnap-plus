@@ -122,7 +122,7 @@ public class TimersSavepointITCase {
         client.submitJob(jobGraph).get();
         waitForAllTaskRunning(miniClusterResource.getMiniCluster(), jobGraph.getJobID(), false);
         CompletableFuture<String> savepointPathFuture =
-                client.triggerSavepoint(jobGraph.getJobID(), null);
+                client.triggerSavepoint(jobGraph.getJobID(), null, null);
 
         String jobmanagerSavepointPath = savepointPathFuture.get(2, TimeUnit.SECONDS);
 

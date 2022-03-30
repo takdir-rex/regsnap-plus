@@ -266,7 +266,7 @@ public class RemoteStreamEnvironmentTest extends TestLogger {
 
         @Override
         public CompletableFuture<String> triggerSavepoint(
-                JobID jobId, @Nullable String savepointDirectory) {
+                JobID jobId, @Nullable String savepointDirectory, @Nullable String snapshotGroup) {
             return null;
         }
 

@@ -60,7 +60,7 @@ public class TestingJobClient implements JobClient {
     }
 
     @Override
-    public CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory) {
+    public CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory, @Nullable String snapshotGroup) {
         return CompletableFuture.completedFuture("null");
     }
 

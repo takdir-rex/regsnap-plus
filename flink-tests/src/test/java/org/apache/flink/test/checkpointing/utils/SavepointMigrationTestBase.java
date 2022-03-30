@@ -163,7 +163,7 @@ public abstract class SavepointMigrationTestBase extends TestBaseUtils {
 
         LOG.info("Triggering savepoint.");
 
-        CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null);
+        CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null, null);
 
         String jobmanagerSavepointPath =
                 savepointPathFuture.get(deadLine.timeLeft().toMillis(), TimeUnit.MILLISECONDS);

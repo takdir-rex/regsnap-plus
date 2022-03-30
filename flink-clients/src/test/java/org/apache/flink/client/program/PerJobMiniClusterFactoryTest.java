@@ -104,7 +104,7 @@ public class PerJobMiniClusterFactoryTest extends TestLogger {
         assertThrows(
                 "is not a streaming job.",
                 ExecutionException.class,
-                () -> jobClient.triggerSavepoint(null).get());
+                () -> jobClient.triggerSavepoint(null, null).get());
 
         assertThrows(
                 "is not a streaming job.",

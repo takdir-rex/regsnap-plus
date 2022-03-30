@@ -230,4 +230,14 @@ public class DataStreamSink<T> {
         transformation.setSlotSharingGroup(slotSharingGroup);
         return this;
     }
+
+    /**
+     * Sets the snapshot group of this operation
+     * @param snapshotGroup The snapshot group name
+     */
+    @PublicEvolving
+    public DataStreamSink<T> snapshotGroup(String snapshotGroup) {
+        transformation.setSnapshotGroup(snapshotGroup);
+        return this;
+    }
 }

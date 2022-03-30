@@ -99,7 +99,7 @@ public class AbstractAsynchronousOperationHandlersTest extends TestLogger {
         final TestingRestfulGateway testingRestfulGateway =
                 new TestingRestfulGateway.Builder()
                         .setTriggerSavepointFunction(
-                                (JobID jobId, String directory) -> savepointFuture)
+                                (JobID jobId, String directory, String snapshotGroup) -> savepointFuture)
                         .build();
 
         // trigger the operation
@@ -137,7 +137,7 @@ public class AbstractAsynchronousOperationHandlersTest extends TestLogger {
         final TestingRestfulGateway testingRestfulGateway =
                 new TestingRestfulGateway.Builder()
                         .setTriggerSavepointFunction(
-                                (JobID jobId, String directory) ->
+                                (JobID jobId, String directory, String snapshotGroup) ->
                                         FutureUtils.completedExceptionally(testException))
                         .build();
 
@@ -198,7 +198,7 @@ public class AbstractAsynchronousOperationHandlersTest extends TestLogger {
         final TestingRestfulGateway testingRestfulGateway =
                 new TestingRestfulGateway.Builder()
                         .setTriggerSavepointFunction(
-                                (JobID jobId, String directory) -> savepointFuture)
+                                (JobID jobId, String directory, String snapshotGroup) -> savepointFuture)
                         .build();
 
         final TriggerId triggerId =

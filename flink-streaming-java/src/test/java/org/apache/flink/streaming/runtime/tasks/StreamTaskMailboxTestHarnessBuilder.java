@@ -271,6 +271,7 @@ public class StreamTaskMailboxTestHarnessBuilder<OUT> {
                         StreamConfigChainer.MAIN_NODE_ID,
                         null,
                         null,
+                        null,
                         (StreamOperator<?>) null,
                         null,
                         null);
@@ -311,7 +312,7 @@ public class StreamTaskMailboxTestHarnessBuilder<OUT> {
 
         StreamNode sourceVertexDummy =
                 new StreamNode(
-                        0, null, null, (StreamOperator<?>) null, null, SourceStreamTask.class);
+                        0, null, null, null, (StreamOperator<?>) null, null, SourceStreamTask.class);
         StreamEdge streamEdge =
                 new StreamEdge(
                         sourceVertexDummy,
@@ -339,6 +340,7 @@ public class StreamTaskMailboxTestHarnessBuilder<OUT> {
                 new StreamEdge(
                         new StreamNode(
                                 maxNodeId + inputId + 1337,
+                                null,
                                 null,
                                 null,
                                 (StreamOperator<?>) null,

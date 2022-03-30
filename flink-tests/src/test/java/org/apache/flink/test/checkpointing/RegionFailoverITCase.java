@@ -199,7 +199,7 @@ public class RegionFailoverITCase extends TestLogger {
                 .name(SINGLE_REGION_SOURCE_NAME)
                 .setParallelism(1)
                 .map((MapFunction<Tuple2<Integer, Integer>, Object>) value -> value)
-                .setParallelism(1);
+                .setParallelism(1).name("Map 2");
 
         return env.getStreamGraph().getJobGraph();
     }

@@ -134,11 +134,13 @@ public class StreamConfigChainer<OWNER> {
                                         tailConfig.getChainIndex(),
                                         null,
                                         null,
+                                        null,
                                         (StreamOperator<?>) null,
                                         null,
                                         null),
                                 new StreamNode(
                                         chainIndex,
+                                        null,
                                         null,
                                         null,
                                         (StreamOperator<?>) null,
@@ -171,13 +173,14 @@ public class StreamConfigChainer<OWNER> {
         List<StreamEdge> outEdgesInOrder = new LinkedList<StreamEdge>();
 
         StreamNode sourceVertex =
-                new StreamNode(chainIndex, null, null, (StreamOperator<?>) null, null, null);
+                new StreamNode(chainIndex, null, null, null, (StreamOperator<?>) null, null, null);
         for (int i = 0; i < numberOfNonChainedOutputs; ++i) {
             outEdgesInOrder.add(
                     new StreamEdge(
                             sourceVertex,
                             new StreamNode(
                                     chainIndex + i,
+                                    null,
                                     null,
                                     null,
                                     (StreamOperator<?>) null,
@@ -213,6 +216,7 @@ public class StreamConfigChainer<OWNER> {
                         MAIN_NODE_ID,
                         "group",
                         null,
+                        null,
                         dummyOperator,
                         "source dummy",
                         SourceStreamTask.class);
@@ -221,6 +225,7 @@ public class StreamConfigChainer<OWNER> {
                     new StreamNode(
                             MAIN_NODE_ID + 1 + i,
                             "group",
+                            null,
                             null,
                             dummyOperator,
                             "target dummy",

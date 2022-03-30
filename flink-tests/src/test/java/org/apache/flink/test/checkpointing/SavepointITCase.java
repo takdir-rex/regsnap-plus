@@ -463,7 +463,7 @@ public class SavepointITCase extends TestLogger {
         final JobID jobID = new JobID();
 
         try {
-            client.triggerSavepoint(jobID, null).get();
+            client.triggerSavepoint(jobID, null, null).get();
 
             fail();
         } catch (ExecutionException e) {
@@ -991,7 +991,7 @@ public class SavepointITCase extends TestLogger {
                     StatefulCounter.getProgressLatch()
                             .await(deadline.timeLeft().toMillis(), TimeUnit.MILLISECONDS));
 
-            savepointPath = client.triggerSavepoint(jobID, null).get();
+            savepointPath = client.triggerSavepoint(jobID, null, null).get();
             LOG.info("Retrieved savepoint: " + savepointPath + ".");
         } finally {
             // Shut down the Flink cluster (thereby canceling the job)
@@ -1332,7 +1332,7 @@ public class SavepointITCase extends TestLogger {
             for (OneShotLatch latch : iterTestSnapshotWait) {
                 latch.await();
             }
-            savepointPath = client.triggerSavepoint(jobGraph.getJobID(), null).get();
+            savepointPath = client.triggerSavepoint(jobGraph.getJobID(), null, null).get();
 
             client.cancel(jobGraph.getJobID()).get();
             while (!client.getJobStatus(jobGraph.getJobID()).get().isGloballyTerminalState()) {

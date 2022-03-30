@@ -131,7 +131,7 @@ public class TestingJobMasterGateway implements JobMasterGateway {
     @Nonnull private final Supplier<CompletableFuture<ExecutionGraphInfo>> requestJobSupplier;
 
     @Nonnull
-    private final BiFunction<String, Boolean, CompletableFuture<String>> triggerSavepointFunction;
+    private final TriFunction<String, Boolean, String, CompletableFuture<String>> triggerSavepointFunction;
 
     @Nonnull
     private final BiFunction<String, Boolean, CompletableFuture<String>> stopWithSavepointFunction;
@@ -232,7 +232,7 @@ public class TestingJobMasterGateway implements JobMasterGateway {
             @Nonnull Supplier<CompletableFuture<JobDetails>> requestJobDetailsSupplier,
             @Nonnull Supplier<CompletableFuture<ExecutionGraphInfo>> requestJobSupplier,
             @Nonnull
-                    BiFunction<String, Boolean, CompletableFuture<String>> triggerSavepointFunction,
+                    TriFunction<String, Boolean, String, CompletableFuture<String>> triggerSavepointFunction,
             @Nonnull
                     BiFunction<String, Boolean, CompletableFuture<String>>
                             stopWithSavepointFunction,
@@ -404,8 +404,8 @@ public class TestingJobMasterGateway implements JobMasterGateway {
 
     @Override
     public CompletableFuture<String> triggerSavepoint(
-            @Nullable final String targetDirectory, final boolean cancelJob, final Time timeout) {
-        return triggerSavepointFunction.apply(targetDirectory, cancelJob);
+            @Nullable final String targetDirectory, final boolean cancelJob, @Nullable final String snapshotGroup, final Time timeout) {
+        return triggerSavepointFunction.apply(targetDirectory, cancelJob, snapshotGroup);
     }
 
     @Override

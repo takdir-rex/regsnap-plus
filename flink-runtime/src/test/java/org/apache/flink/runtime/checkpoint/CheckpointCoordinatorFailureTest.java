@@ -228,7 +228,7 @@ public class CheckpointCoordinatorFailureTest extends TestLogger {
                         .setCompletedCheckpointStore(completedCheckpointStore)
                         .setTimer(manuallyTriggeredScheduledExecutor)
                         .build();
-        checkpointCoordinator.triggerSavepoint(tmpFolder.newFolder().getAbsolutePath());
+        checkpointCoordinator.triggerSavepoint(tmpFolder.newFolder().getAbsolutePath(), null);
         manuallyTriggeredScheduledExecutor.triggerAll();
 
         try {

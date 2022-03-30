@@ -195,6 +195,7 @@ public class SavepointHandlers
                 throws RestHandlerException {
             final JobID jobId = request.getPathParameter(JobIDPathParameter.class);
             final String requestedTargetDirectory = request.getRequestBody().getTargetDirectory();
+            final String snapshotGroup = request.getRequestBody().getSnapshotGroup();
 
             if (requestedTargetDirectory == null && defaultSavepointDir == null) {
                 throw new RestHandlerException(
@@ -211,7 +212,7 @@ public class SavepointHandlers
                             ? requestedTargetDirectory
                             : defaultSavepointDir;
             return gateway.triggerSavepoint(
-                    jobId, targetDirectory, cancelJob, null, RpcUtils.INF_TIMEOUT);
+                    jobId, targetDirectory, cancelJob, snapshotGroup, RpcUtils.INF_TIMEOUT);
         }
     }
 

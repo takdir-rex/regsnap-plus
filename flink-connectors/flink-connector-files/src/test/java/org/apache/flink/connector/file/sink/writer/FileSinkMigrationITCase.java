@@ -188,7 +188,7 @@ public class FileSinkMigrationITCase extends TestLogger {
             waitForAllTaskRunning(miniCluster, jobId, false);
 
             CompletableFuture<String> savepointResultFuture =
-                    miniCluster.triggerSavepoint(jobId, savepointBasePath, true);
+                    miniCluster.triggerSavepoint(jobId, savepointBasePath, true, null);
             return savepointResultFuture.get();
         }
     }

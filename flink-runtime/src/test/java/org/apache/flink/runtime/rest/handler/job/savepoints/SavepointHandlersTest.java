@@ -92,7 +92,7 @@ public class SavepointHandlersTest extends TestLogger {
         final TestingRestfulGateway testingRestfulGateway =
                 new TestingRestfulGateway.Builder()
                         .setTriggerSavepointFunction(
-                                (JobID jobId, String targetDirectory) ->
+                                (JobID jobId, String targetDirectory, String snapshotGroup) ->
                                         CompletableFuture.completedFuture(
                                                 COMPLETED_SAVEPOINT_EXTERNAL_POINTER))
                         .build();
@@ -122,7 +122,7 @@ public class SavepointHandlersTest extends TestLogger {
         final TestingRestfulGateway testingRestfulGateway =
                 new TestingRestfulGateway.Builder()
                         .setTriggerSavepointFunction(
-                                (JobID jobId, String targetDirectory) -> {
+                                (JobID jobId, String targetDirectory, String snapshotGroup) -> {
                                     targetDirectoryFuture.complete(targetDirectory);
                                     return CompletableFuture.completedFuture(
                                             COMPLETED_SAVEPOINT_EXTERNAL_POINTER);
@@ -146,7 +146,7 @@ public class SavepointHandlersTest extends TestLogger {
         TestingRestfulGateway testingRestfulGateway =
                 new TestingRestfulGateway.Builder()
                         .setTriggerSavepointFunction(
-                                (JobID jobId, String directory) ->
+                                (JobID jobId, String directory, String snapshotGroup) ->
                                         CompletableFuture.completedFuture(
                                                 COMPLETED_SAVEPOINT_EXTERNAL_POINTER))
                         .build();
@@ -172,7 +172,7 @@ public class SavepointHandlersTest extends TestLogger {
         TestingRestfulGateway testingRestfulGateway =
                 new TestingRestfulGateway.Builder()
                         .setTriggerSavepointFunction(
-                                (JobID jobId, String directory) ->
+                                (JobID jobId, String directory, String snapshotGroup) ->
                                         FutureUtils.completedExceptionally(
                                                 new RuntimeException("expected")))
                         .build();

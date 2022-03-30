@@ -1874,6 +1874,9 @@
         },
         "cancel-job" : {
           "type" : "boolean"
+        },
+        "snapshot-group" : {
+          "type" : "string"
         }
       }
     },

@@ -62,9 +62,10 @@ public interface JobClient {
      * org.apache.flink.configuration.CheckpointingOptions#SAVEPOINT_DIRECTORY} if it is null.
      *
      * @param savepointDirectory directory the savepoint should be written to
+     * @param snapshotGroup targeted snapshot group
      * @return a {@link CompletableFuture} containing the path where the savepoint is located
      */
-    CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory);
+    CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory, @Nullable String snapshotGroup);
 
     /**
      * Requests the accumulators of the associated job. Accumulators can be requested while it is

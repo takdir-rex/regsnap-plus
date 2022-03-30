@@ -93,10 +93,10 @@ public class ClusterClientJobClientAdapter<ClusterID>
     }
 
     @Override
-    public CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory) {
+    public CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory, @Nullable String snapshotGroup) {
         return bridgeClientRequest(
                 clusterClientProvider,
-                (clusterClient -> clusterClient.triggerSavepoint(jobID, savepointDirectory)));
+                (clusterClient -> clusterClient.triggerSavepoint(jobID, savepointDirectory, snapshotGroup)));
     }
 
     @Override

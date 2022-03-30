@@ -536,8 +536,12 @@ public class CheckpointCoordinator {
 
             final long timestamp = System.currentTimeMillis();
 
-            CompletableFuture<CheckpointPlan> checkpointPlanFuture =
-                    checkpointPlanCalculator.calculateCheckpointPlan();
+            CompletableFuture<CheckpointPlan> checkpointPlanFuture;
+            if(request.snapshotGroup == null){
+                checkpointPlanFuture = checkpointPlanCalculator.calculateCheckpointPlan();
+            } else {
+                checkpointPlanFuture = checkpointPlanCalculator.calculateCheckpointPlan(request.snapshotGroup);
+            }
 
             final CompletableFuture<PendingCheckpoint> pendingCheckpointCompletableFuture =
                     checkpointPlanFuture

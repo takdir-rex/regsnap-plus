@@ -239,7 +239,7 @@ public class RescalingITCase extends TestLogger {
             CollectionSink.clearElementsSet();
 
             waitForAllTaskRunning(cluster.getMiniCluster(), jobGraph.getJobID(), false);
-            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null);
+            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null, null);
 
             final String savepointPath =
                     savepointPathFuture.get(deadline.timeLeft().toMillis(), TimeUnit.MILLISECONDS);
@@ -321,7 +321,7 @@ public class RescalingITCase extends TestLogger {
             // wait until the operator handles some data
             StateSourceBase.workStartedLatch.await();
 
-            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null);
+            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null, null);
 
             final String savepointPath =
                     savepointPathFuture.get(deadline.timeLeft().toMillis(), TimeUnit.MILLISECONDS);
@@ -419,7 +419,7 @@ public class RescalingITCase extends TestLogger {
             CollectionSink.clearElementsSet();
 
             waitForAllTaskRunning(cluster.getMiniCluster(), jobGraph.getJobID(), false);
-            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null);
+            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null, null);
 
             final String savepointPath =
                     savepointPathFuture.get(deadline.timeLeft().toMillis(), TimeUnit.MILLISECONDS);
@@ -548,7 +548,7 @@ public class RescalingITCase extends TestLogger {
 
             CompletableFuture<String> savepointPathFuture =
                     FutureUtils.retryWithDelay(
-                            () -> client.triggerSavepoint(jobID, null),
+                            () -> client.triggerSavepoint(jobID, null, null),
                             (int) deadline.timeLeft().getSeconds() / 10,
                             Time.seconds(10),
                             (throwable) -> true,

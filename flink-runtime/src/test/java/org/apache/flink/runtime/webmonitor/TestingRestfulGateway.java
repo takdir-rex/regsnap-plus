@@ -79,9 +79,9 @@ public class TestingRestfulGateway implements RestfulGateway {
                     () -> CompletableFuture.completedFuture(Collections.emptyList());
     static final Supplier<CompletableFuture<Acknowledge>> DEFAULT_CLUSTER_SHUTDOWN_SUPPLIER =
             () -> CompletableFuture.completedFuture(Acknowledge.get());
-    static final BiFunction<JobID, String, CompletableFuture<String>>
+    static final TriFunction<JobID, String, String, CompletableFuture<String>>
             DEFAULT_TRIGGER_SAVEPOINT_FUNCTION =
-                    (JobID jobId, String targetDirectory) ->
+                    (JobID jobId, String targetDirectory, String snapshotGroup) ->
                             FutureUtils.completedExceptionally(new UnsupportedOperationException());
     static final BiFunction<JobID, String, CompletableFuture<String>>
             DEFAULT_STOP_WITH_SAVEPOINT_FUNCTION =
@@ -128,7 +128,7 @@ public class TestingRestfulGateway implements RestfulGateway {
     protected Supplier<CompletableFuture<Collection<Tuple2<ResourceID, String>>>>
             requestTaskManagerMetricQueryServiceAddressesSupplier;
 
-    protected BiFunction<JobID, String, CompletableFuture<String>> triggerSavepointFunction;
+    protected TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction;
 
     protected BiFunction<JobID, String, CompletableFuture<String>> stopWithSavepointFunction;
 
@@ -173,7 +173,7 @@ public class TestingRestfulGateway implements RestfulGateway {
                     requestMetricQueryServiceAddressesSupplier,
             Supplier<CompletableFuture<Collection<Tuple2<ResourceID, String>>>>
                     requestTaskManagerMetricQueryServiceAddressesSupplier,
-            BiFunction<JobID, String, CompletableFuture<String>> triggerSavepointFunction,
+            TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction,
             BiFunction<JobID, String, CompletableFuture<String>> stopWithSavepointFunction,
             Supplier<CompletableFuture<Acknowledge>> clusterShutdownSupplier,
             TriFunction<
@@ -256,8 +256,8 @@ public class TestingRestfulGateway implements RestfulGateway {
 
     @Override
     public CompletableFuture<String> triggerSavepoint(
-            JobID jobId, String targetDirectory, boolean cancelJob, Time timeout) {
-        return triggerSavepointFunction.apply(jobId, targetDirectory);
+            JobID jobId, String targetDirectory, boolean cancelJob, String snapshotGroup, Time timeout) {
+        return triggerSavepointFunction.apply(jobId, targetDirectory, snapshotGroup);
     }
 
     @Override
@@ -309,7 +309,7 @@ public class TestingRestfulGateway implements RestfulGateway {
         protected Supplier<CompletableFuture<Collection<Tuple2<ResourceID, String>>>>
                 requestTaskManagerMetricQueryServiceGatewaysSupplier;
         protected Supplier<CompletableFuture<Acknowledge>> clusterShutdownSupplier;
-        protected BiFunction<JobID, String, CompletableFuture<String>> triggerSavepointFunction;
+        protected TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction;
         protected BiFunction<JobID, String, CompletableFuture<String>> stopWithSavepointFunction;
         protected TriFunction<
                         JobID,
@@ -414,7 +414,7 @@ public class TestingRestfulGateway implements RestfulGateway {
         }
 
         public T setTriggerSavepointFunction(
-                BiFunction<JobID, String, CompletableFuture<String>> triggerSavepointFunction) {
+                TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction) {
             this.triggerSavepointFunction = triggerSavepointFunction;
             return self();
         }

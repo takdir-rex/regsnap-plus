@@ -1458,7 +1458,7 @@ public class JobMasterTest extends TestLogger {
     }
 
     /**
-     * Tests that the timeout in {@link JobMasterGateway#triggerSavepoint(String, boolean, Time)} is
+     * Tests that the timeout in {@link JobMasterGateway#triggerSavepoint(String, boolean, String, Time)} is
      * respected.
      */
     @Test
@@ -1466,7 +1466,7 @@ public class JobMasterTest extends TestLogger {
         final TestingSchedulerNG testingSchedulerNG =
                 TestingSchedulerNG.newBuilder()
                         .setTriggerSavepointFunction(
-                                (ignoredA, ignoredB) -> new CompletableFuture<>())
+                                (ignoredA, ignoredB, ignoredC) -> new CompletableFuture<>())
                         .build();
 
         final JobMaster jobMaster =

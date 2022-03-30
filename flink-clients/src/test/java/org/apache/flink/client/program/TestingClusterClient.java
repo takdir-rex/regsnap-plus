@@ -50,8 +50,8 @@ public class TestingClusterClient<T> implements ClusterClient<T> {
             stopWithSavepointFunction =
                     (ignore1, ignore2, savepointPath) ->
                             CompletableFuture.completedFuture(savepointPath);
-    private BiFunction<JobID, String, CompletableFuture<String>> triggerSavepointFunction =
-            (ignore, savepointPath) -> CompletableFuture.completedFuture(savepointPath);
+    private TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction =
+            (ignore, savepointPath, snapshotGroup) -> CompletableFuture.completedFuture(savepointPath);
 
     public void setCancelFunction(Function<JobID, CompletableFuture<Acknowledge>> cancelFunction) {
         this.cancelFunction = cancelFunction;
@@ -69,7 +69,7 @@ public class TestingClusterClient<T> implements ClusterClient<T> {
     }
 
     public void setTriggerSavepointFunction(
-            BiFunction<JobID, String, CompletableFuture<String>> triggerSavepointFunction) {
+            TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction) {
         this.triggerSavepointFunction = triggerSavepointFunction;
     }
 
@@ -142,8 +142,8 @@ public class TestingClusterClient<T> implements ClusterClient<T> {
 
     @Override
     public CompletableFuture<String> triggerSavepoint(
-            JobID jobId, @Nullable String savepointDirectory) {
-        return triggerSavepointFunction.apply(jobId, savepointDirectory);
+            JobID jobId, @Nullable String savepointDirectory, @Nullable String snapshotGroup) {
+        return triggerSavepointFunction.apply(jobId, savepointDirectory, snapshotGroup);
     }
 
     @Override

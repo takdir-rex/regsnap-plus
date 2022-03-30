@@ -72,7 +72,7 @@ public class WebSubmissionJobClient implements JobClient {
     }
 
     @Override
-    public CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory) {
+    public CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory, @Nullable String snapshotGroup) {
         throw new FlinkRuntimeException(
                 "A savepoint cannot be taken through the Job Client when in Web Submission.");
     }

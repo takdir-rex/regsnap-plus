@@ -251,7 +251,7 @@ abstract class StateWithExecutionGraph implements State {
         }
 
         return checkpointCoordinator
-                .triggerSavepoint(targetDirectory)
+                .triggerSavepoint(targetDirectory, snapshotGroup)
                 .thenApply(CompletedCheckpoint::getExternalPointer)
                 .handleAsync(
                         (path, throwable) -> {

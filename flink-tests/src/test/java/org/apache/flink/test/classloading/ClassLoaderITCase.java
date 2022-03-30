@@ -414,7 +414,7 @@ public class ClassLoaderITCase extends TestLogger {
             try {
                 savepointPath =
                         clusterClient
-                                .triggerSavepoint(jobId, null)
+                                .triggerSavepoint(jobId, null, null)
                                 .get(deadline.timeLeft().toMillis(), TimeUnit.MILLISECONDS);
             } catch (Exception cause) {
                 LOG.info("Failed to trigger savepoint. Retrying...", cause);

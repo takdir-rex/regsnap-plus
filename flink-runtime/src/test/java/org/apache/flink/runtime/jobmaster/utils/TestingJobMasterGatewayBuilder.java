@@ -120,8 +120,8 @@ public class TestingJobMasterGatewayBuilder {
             () -> FutureUtils.completedExceptionally(new UnsupportedOperationException());
     private Supplier<CompletableFuture<ExecutionGraphInfo>> requestJobSupplier =
             () -> FutureUtils.completedExceptionally(new UnsupportedOperationException());
-    private BiFunction<String, Boolean, CompletableFuture<String>> triggerSavepointFunction =
-            (targetDirectory, ignoredB) ->
+    private TriFunction<String, Boolean, String, CompletableFuture<String>> triggerSavepointFunction =
+            (targetDirectory, ignoredB, snapshotGroup) ->
                     CompletableFuture.completedFuture(
                             targetDirectory != null
                                     ? targetDirectory
@@ -280,7 +280,7 @@ public class TestingJobMasterGatewayBuilder {
     }
 
     public TestingJobMasterGatewayBuilder setTriggerSavepointFunction(
-            BiFunction<String, Boolean, CompletableFuture<String>> triggerSavepointFunction) {
+            TriFunction<String, Boolean, String, CompletableFuture<String>> triggerSavepointFunction) {
         this.triggerSavepointFunction = triggerSavepointFunction;
         return this;
     }

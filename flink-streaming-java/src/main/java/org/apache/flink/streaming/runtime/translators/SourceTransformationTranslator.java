@@ -67,6 +67,7 @@ public class SourceTransformationTranslator<OUT, SplitT extends SourceSplit, Enu
 
         final StreamGraph streamGraph = context.getStreamGraph();
         final String slotSharingGroup = context.getSlotSharingGroup();
+        final String snapshotGroup = context.getSnapshotGroup();
         final int transformationId = transformation.getId();
         final ExecutionConfig executionConfig = streamGraph.getExecutionConfig();
 
@@ -81,6 +82,7 @@ public class SourceTransformationTranslator<OUT, SplitT extends SourceSplit, Enu
         streamGraph.addSource(
                 transformationId,
                 slotSharingGroup,
+                snapshotGroup,
                 transformation.getCoLocationGroupKey(),
                 operatorFactory,
                 null,

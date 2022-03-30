@@ -57,12 +57,14 @@ abstract class AbstractOneInputTransformationTranslator<IN, OUT, OP extends Tran
 
         final StreamGraph streamGraph = context.getStreamGraph();
         final String slotSharingGroup = context.getSlotSharingGroup();
+        final String snapshotGroup = context.getSnapshotGroup();
         final int transformationId = transformation.getId();
         final ExecutionConfig executionConfig = streamGraph.getExecutionConfig();
 
         streamGraph.addOperator(
                 transformationId,
                 slotSharingGroup,
+                snapshotGroup,
                 transformation.getCoLocationGroupKey(),
                 operatorFactory,
                 inputType,

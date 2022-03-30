@@ -65,8 +65,8 @@ public class WindowJoin2 {
                 "To customize example, use: WindowJoin [--windowSize <window-size-in-millis>] [--rate <elements-per-second>]");
 
         Configuration conf = new Configuration();
-        final File checkpointDir = new File("/Users/takdir/tmp/checkpoint");
-        final File savepointDir = new File("/Users/takdir/tmp/savepoint");
+        final File checkpointDir = new File("C:\\Users\\Takdir\\tmp\\checkpoint");
+        final File savepointDir = new File("C:\\Users\\Takdir\\tmp\\savepoint");
 
         conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
         conf.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY, checkpointDir.toURI().toString());
@@ -84,29 +84,33 @@ public class WindowJoin2 {
         env.getCheckpointConfig().setTolerableCheckpointFailureNumber(0); //shutdown job if failure found
         env.getCheckpointConfig().setMaxConcurrentCheckpoints(Integer.MAX_VALUE); //as much as possible
 
+        env.disableOperatorChaining();
 
-        //        env.enableCheckpointing(2000);
+
+//                env.enableCheckpointing(2000);
 //        env.setStateBackend(new HashMapStateBackend());
 //        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
 
         // create the data sources for both grades and salaries
         DataStream<Tuple2<String, Integer>> grades =
                 GradeSource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1a");
+                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1a").name("WM grades").snapshotGroup("snap1");
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1b").name("");
+                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1b").name("WM salaries").snapshotGroup("snap1");
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
         DataStream<Tuple3<String, Integer, Integer>> joinedStream =
                 runWindowJoin(grades, salaries, windowSize);
 
-        ((SingleOutputStreamOperator) joinedStream).uid("join").slotSharingGroup("");
+        ((SingleOutputStreamOperator) joinedStream).uid("join").name("Join").snapshotGroup("snap2");
 
         // print the results with a single thread, rather than in parallel
-        joinedStream.print().setParallelism(1).uid("Sink");
+        joinedStream.print().setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snap2");
+
+//        System.out.println(env.getExecutionPlan());
 
         // execute program
         env.execute("Windowed Join Example");

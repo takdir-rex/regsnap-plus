@@ -97,7 +97,7 @@ public final class TestingDispatcherGateway extends TestingRestfulGateway
                     requestMetricQueryServiceAddressesSupplier,
             Supplier<CompletableFuture<Collection<Tuple2<ResourceID, String>>>>
                     requestTaskManagerMetricQueryServiceGatewaysSupplier,
-            BiFunction<JobID, String, CompletableFuture<String>> triggerSavepointFunction,
+            TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction,
             BiFunction<JobID, String, CompletableFuture<String>> stopWithSavepointFunction,
             Function<JobGraph, CompletableFuture<Acknowledge>> submitFunction,
             Supplier<CompletableFuture<Collection<JobID>>> listFunction,

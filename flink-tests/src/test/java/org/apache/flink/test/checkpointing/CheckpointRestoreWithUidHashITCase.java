@@ -106,7 +106,7 @@ public class CheckpointRestoreWithUidHashITCase {
             startWaitingForCheckpointLatch.get().await();
             String savepointPath =
                     miniCluster
-                            .triggerSavepoint(jobId, TMP_FOLDER.newFolder().getAbsolutePath(), true)
+                            .triggerSavepoint(jobId, TMP_FOLDER.newFolder().getAbsolutePath(), true, null)
                             .get();
 
             // Get the operator id

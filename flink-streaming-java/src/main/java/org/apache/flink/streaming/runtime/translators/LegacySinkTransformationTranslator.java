@@ -69,6 +69,7 @@ public class LegacySinkTransformationTranslator<IN>
 
         final StreamGraph streamGraph = context.getStreamGraph();
         final String slotSharingGroup = context.getSlotSharingGroup();
+        final String snapshotGroup = context.getSnapshotGroup();
         final int transformationId = transformation.getId();
         final ExecutionConfig executionConfig = streamGraph.getExecutionConfig();
 
@@ -82,6 +83,7 @@ public class LegacySinkTransformationTranslator<IN>
         streamGraph.addSink(
                 transformationId,
                 slotSharingGroup,
+                snapshotGroup,
                 transformation.getCoLocationGroupKey(),
                 transformation.getOperatorFactory(),
                 input.getOutputType(),
