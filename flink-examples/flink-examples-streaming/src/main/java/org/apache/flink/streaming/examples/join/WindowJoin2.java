@@ -94,21 +94,21 @@ public class WindowJoin2 {
         // create the data sources for both grades and salaries
         DataStream<Tuple2<String, Integer>> grades =
                 GradeSource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1a").name("WM grades").snapshotGroup("snap1");
+                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).name("Grades Source").snapshotGroup("snapshot-1");
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).uid("Op1b").name("WM salaries").snapshotGroup("snap1");
+                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).name("WM salaries").snapshotGroup("snapshot-1");
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
         DataStream<Tuple3<String, Integer, Integer>> joinedStream =
                 runWindowJoin(grades, salaries, windowSize);
 
-        ((SingleOutputStreamOperator) joinedStream).uid("join").name("Join").snapshotGroup("snap2");
+        ((SingleOutputStreamOperator) joinedStream).uid("join").name("Join").snapshotGroup("snapshot-2");
 
         // print the results with a single thread, rather than in parallel
-        joinedStream.print().setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snap2");
+        joinedStream.print().setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snapshot-2");
 
 //        System.out.println(env.getExecutionPlan());
 
