@@ -65,8 +65,8 @@ public class WindowJoin2 {
                 "To customize example, use: WindowJoin [--windowSize <window-size-in-millis>] [--rate <elements-per-second>]");
 
         Configuration conf = new Configuration();
-        final File checkpointDir = new File("C:\\Users\\Takdir\\tmp\\checkpoint");
-        final File savepointDir = new File("C:\\Users\\Takdir\\tmp\\savepoint");
+        final File checkpointDir = new File("/Users/takdir/tmp/checkpoint");
+        final File savepointDir = new File("/Users/takdir/tmp/savepoint");
 
         conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
         conf.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY, checkpointDir.toURI().toString());
@@ -94,7 +94,7 @@ public class WindowJoin2 {
         // create the data sources for both grades and salaries
         DataStream<Tuple2<String, Integer>> grades =
                 GradeSource.getSource(env, rate)
-                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).name("Grades Source").snapshotGroup("snapshot-1");
+                        .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create()).name("WM grades").snapshotGroup("snapshot-1");
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)

@@ -61,7 +61,7 @@ public class WindowJoinSampleData {
                 StreamExecutionEnvironment env, long rate) {
             return env.fromCollection(
                     new ThrottledIterator<>(new GradeSource(), rate),
-                    TypeInformation.of(new TypeHint<Tuple2<String, Integer>>() {})).uid("S1").name("Souce grades").snapshotGroup("snap0");
+                    TypeInformation.of(new TypeHint<Tuple2<String, Integer>>() {})).uid("S1").name("Souce grades").snapshotGroup("snapshot-1");
         }
     }
 
@@ -89,7 +89,7 @@ public class WindowJoinSampleData {
                 StreamExecutionEnvironment env, long rate) {
             return env.fromCollection(
                     new ThrottledIterator<>(new SalarySource(), rate),
-                    TypeInformation.of(new TypeHint<Tuple2<String, Integer>>() {})).uid("S2").name("Source salaries").snapshotGroup("snap0");
+                    TypeInformation.of(new TypeHint<Tuple2<String, Integer>>() {})).uid("S2").name("Source salaries").snapshotGroup("snapshot-1");
         }
     }
 }

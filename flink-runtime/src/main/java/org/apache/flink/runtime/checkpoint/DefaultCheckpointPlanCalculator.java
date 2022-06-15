@@ -225,20 +225,8 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
                 if(jobVertex.getSnapshotGroup().equals(snapshotGroup)){
                     targetedTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
 
-                    if(jobVertex.getJobVertex().isInputVertex()){
+                    if(jobVertex.getJobVertex().isSourceOfSnapshotGroup()){
                         targetedSourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-                    } else {
-                        boolean isTargetedSource = true;
-                        for(IntermediateResult ires : jobVertex.getInputs()){
-                            if(ires.getProducer().getSnapshotGroup() != null) {
-                                if(ires.getProducer().getSnapshotGroup().equals(snapshotGroup)){
-                                    isTargetedSource = false;
-                                }
-                            }
-                        }
-                        if(isTargetedSource){
-                            targetedSourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-                        }
                     }
                 }
             }

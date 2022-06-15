@@ -579,6 +579,25 @@ public class JobVertex implements java.io.Serializable {
         this.resultOptimizerProperties = resultOptimizerProperties;
     }
 
+    public boolean isSourceOfSnapshotGroup(){
+        if(this.getSnapshotGroup() == null){
+            return false;
+        }
+        if(isInputVertex()){
+            return true;
+        }
+        boolean sourceOfSnapshotGroup = true;
+        for(JobEdge jobEdge : getInputs()){
+            String snapGroup = jobEdge.getSource().getProducer().getSnapshotGroup();
+            if(snapGroup != null){
+                if (snapGroup.equals(snapshotGroup)){
+                    sourceOfSnapshotGroup = false;
+                }
+            }
+        }
+        return sourceOfSnapshotGroup;
+    }
+
     // --------------------------------------------------------------------------------------------
 
     @Override
