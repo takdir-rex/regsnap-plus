@@ -65,7 +65,8 @@ public interface JobClient {
      * @param snapshotGroup targeted snapshot group
      * @return a {@link CompletableFuture} containing the path where the savepoint is located
      */
-    CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory, @Nullable String snapshotGroup);
+    CompletableFuture<String> triggerSavepoint(
+            @Nullable String savepointDirectory, @Nullable String snapshotGroup);
 
     /**
      * Requests the accumulators of the associated job. Accumulators can be requested while it is

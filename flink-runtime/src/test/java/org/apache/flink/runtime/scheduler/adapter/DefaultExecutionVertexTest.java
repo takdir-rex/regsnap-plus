@@ -81,7 +81,8 @@ public class DefaultExecutionVertexTest extends TestLogger {
                         Collections.emptyList(),
                         stateSupplier,
                         consumedPartitionGroups,
-                        resultPartitionById::get);
+                        resultPartitionById::get,
+                        null);
     }
 
     @Test

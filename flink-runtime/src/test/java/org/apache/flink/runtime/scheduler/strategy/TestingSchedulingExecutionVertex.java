@@ -85,6 +85,11 @@ public class TestingSchedulingExecutionVertex implements SchedulingExecutionVert
     }
 
     @Override
+    public String getSnapshotGroup() {
+        return null;
+    }
+
+    @Override
     public List<ConsumedPartitionGroup> getConsumedPartitionGroups() {
         return consumedPartitionGroups;
     }

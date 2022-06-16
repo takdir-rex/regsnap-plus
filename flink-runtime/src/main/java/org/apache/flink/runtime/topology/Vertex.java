@@ -33,4 +33,7 @@ public interface Vertex<
     Iterable<? extends R> getConsumedResults();
 
     Iterable<? extends R> getProducedResults();
+
+    String getSnapshotGroup();
+
 }

@@ -128,7 +128,8 @@ public class TestingRestfulGateway implements RestfulGateway {
     protected Supplier<CompletableFuture<Collection<Tuple2<ResourceID, String>>>>
             requestTaskManagerMetricQueryServiceAddressesSupplier;
 
-    protected TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction;
+    protected TriFunction<JobID, String, String, CompletableFuture<String>>
+            triggerSavepointFunction;
 
     protected BiFunction<JobID, String, CompletableFuture<String>> stopWithSavepointFunction;
 
@@ -256,7 +257,11 @@ public class TestingRestfulGateway implements RestfulGateway {
 
     @Override
     public CompletableFuture<String> triggerSavepoint(
-            JobID jobId, String targetDirectory, boolean cancelJob, String snapshotGroup, Time timeout) {
+            JobID jobId,
+            String targetDirectory,
+            boolean cancelJob,
+            String snapshotGroup,
+            Time timeout) {
         return triggerSavepointFunction.apply(jobId, targetDirectory, snapshotGroup);
     }
 
@@ -309,7 +314,8 @@ public class TestingRestfulGateway implements RestfulGateway {
         protected Supplier<CompletableFuture<Collection<Tuple2<ResourceID, String>>>>
                 requestTaskManagerMetricQueryServiceGatewaysSupplier;
         protected Supplier<CompletableFuture<Acknowledge>> clusterShutdownSupplier;
-        protected TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction;
+        protected TriFunction<JobID, String, String, CompletableFuture<String>>
+                triggerSavepointFunction;
         protected BiFunction<JobID, String, CompletableFuture<String>> stopWithSavepointFunction;
         protected TriFunction<
                         JobID,
@@ -414,7 +420,8 @@ public class TestingRestfulGateway implements RestfulGateway {
         }
 
         public T setTriggerSavepointFunction(
-                TriFunction<JobID, String, String, CompletableFuture<String>> triggerSavepointFunction) {
+                TriFunction<JobID, String, String, CompletableFuture<String>>
+                        triggerSavepointFunction) {
             this.triggerSavepointFunction = triggerSavepointFunction;
             return self();
         }

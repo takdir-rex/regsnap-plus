@@ -312,7 +312,13 @@ public class StreamTaskMailboxTestHarnessBuilder<OUT> {
 
         StreamNode sourceVertexDummy =
                 new StreamNode(
-                        0, null, null, null, (StreamOperator<?>) null, null, SourceStreamTask.class);
+                        0,
+                        null,
+                        null,
+                        null,
+                        (StreamOperator<?>) null,
+                        null,
+                        SourceStreamTask.class);
         StreamEdge streamEdge =
                 new StreamEdge(
                         sourceVertexDummy,

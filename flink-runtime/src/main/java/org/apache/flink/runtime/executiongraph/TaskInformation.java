@@ -19,6 +19,7 @@
 package org.apache.flink.runtime.executiongraph;
 
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.jobgraph.JobVertex;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.util.Preconditions;
 
@@ -34,6 +35,8 @@ public class TaskInformation implements Serializable {
 
     /** Job vertex id of the associated job vertex. */
     private final JobVertexID jobVertexId;
+
+    private final JobVertex jobVertex;
 
     /** Name of the task. */
     private final String taskName;
@@ -51,18 +54,30 @@ public class TaskInformation implements Serializable {
     private final Configuration taskConfiguration;
 
     public TaskInformation(
+            JobVertex jobVertex,
             JobVertexID jobVertexId,
             String taskName,
             int numberOfSubtasks,
             int maxNumberOfSubtasks,
             String invokableClassName,
             Configuration taskConfiguration) {
+        this.jobVertex = jobVertex;
         this.jobVertexId = Preconditions.checkNotNull(jobVertexId);
         this.taskName = Preconditions.checkNotNull(taskName);
         this.numberOfSubtasks = numberOfSubtasks;
         this.maxNumberOfSubtasks = maxNumberOfSubtasks;
         this.invokableClassName = Preconditions.checkNotNull(invokableClassName);
         this.taskConfiguration = Preconditions.checkNotNull(taskConfiguration);
+    }
+
+    public TaskInformation(
+            JobVertexID jobVertexId,
+            String taskName,
+            int numberOfSubtasks,
+            int maxNumberOfSubtasks,
+            String invokableClassName,
+            Configuration taskConfiguration) {
+        this(new JobVertex(taskName, jobVertexId), jobVertexId, taskName, numberOfSubtasks, maxNumberOfSubtasks, invokableClassName, taskConfiguration);
     }
 
     public JobVertexID getJobVertexId() {
@@ -87,5 +102,9 @@ public class TaskInformation implements Serializable {
 
     public Configuration getTaskConfiguration() {
         return taskConfiguration;
+    }
+
+    public JobVertex getJobVertex() {
+        return jobVertex;
     }
 }

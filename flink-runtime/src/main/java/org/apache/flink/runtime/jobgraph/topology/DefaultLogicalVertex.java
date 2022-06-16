@@ -77,4 +77,9 @@ public class DefaultLogicalVertex implements LogicalVertex {
     public Iterable<? extends LogicalEdge> getInputs() {
         return inputEdges;
     }
+
+    @Override
+    public String getSnapshotGroup() {
+        return jobVertex.getSnapshotGroup();
+    }
 }

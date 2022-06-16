@@ -97,8 +97,10 @@ public class EmbeddedJobClient implements JobClient, CoordinationRequestGateway 
     }
 
     @Override
-    public CompletableFuture<String> triggerSavepoint(@Nullable final String savepointDirectory, @Nullable String snapshotGroup) {
-        return dispatcherGateway.triggerSavepoint(jobId, savepointDirectory, false, snapshotGroup, timeout);
+    public CompletableFuture<String> triggerSavepoint(
+            @Nullable final String savepointDirectory, @Nullable String snapshotGroup) {
+        return dispatcherGateway.triggerSavepoint(
+                jobId, savepointDirectory, false, snapshotGroup, timeout);
     }
 
     @Override

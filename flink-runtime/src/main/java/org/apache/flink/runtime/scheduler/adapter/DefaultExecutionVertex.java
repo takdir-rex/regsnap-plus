@@ -46,18 +46,21 @@ class DefaultExecutionVertex implements SchedulingExecutionVertex {
     private final Function<IntermediateResultPartitionID, DefaultResultPartition>
             resultPartitionRetriever;
 
+    private final String snapshotGroup;
+
     DefaultExecutionVertex(
             ExecutionVertexID executionVertexId,
             List<DefaultResultPartition> producedPartitions,
             Supplier<ExecutionState> stateSupplier,
             List<ConsumedPartitionGroup> consumedPartitionGroups,
             Function<IntermediateResultPartitionID, DefaultResultPartition>
-                    resultPartitionRetriever) {
+                    resultPartitionRetriever, String snapshotGroup) {
         this.executionVertexId = checkNotNull(executionVertexId);
         this.stateSupplier = checkNotNull(stateSupplier);
         this.producedResults = checkNotNull(producedPartitions);
         this.consumedPartitionGroups = consumedPartitionGroups;
         this.resultPartitionRetriever = resultPartitionRetriever;
+        this.snapshotGroup = snapshotGroup;
     }
 
     @VisibleForTesting
@@ -65,7 +68,7 @@ class DefaultExecutionVertex implements SchedulingExecutionVertex {
             ExecutionVertexID executionVertexId,
             List<DefaultResultPartition> producedPartitions,
             Supplier<ExecutionState> stateSupplier) {
-        this(executionVertexId, producedPartitions, stateSupplier, null, null);
+        this(executionVertexId, producedPartitions, stateSupplier, null, null, null);
     }
 
     @Override
@@ -91,5 +94,10 @@ class DefaultExecutionVertex implements SchedulingExecutionVertex {
     @Override
     public Iterable<DefaultResultPartition> getProducedResults() {
         return producedResults;
+    }
+
+    @Override
+    public String getSnapshotGroup() {
+        return snapshotGroup;
     }
 }

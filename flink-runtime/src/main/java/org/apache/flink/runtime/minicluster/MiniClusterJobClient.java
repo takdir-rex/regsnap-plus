@@ -102,7 +102,8 @@ public final class MiniClusterJobClient implements JobClient, CoordinationReques
     }
 
     @Override
-    public CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory, @Nullable String snapshotGroup) {
+    public CompletableFuture<String> triggerSavepoint(
+            @Nullable String savepointDirectory, @Nullable String snapshotGroup) {
         return miniCluster.triggerSavepoint(jobID, savepointDirectory, false, snapshotGroup);
     }
 

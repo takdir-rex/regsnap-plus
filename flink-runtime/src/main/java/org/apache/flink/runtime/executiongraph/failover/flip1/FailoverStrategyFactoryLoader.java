@@ -33,6 +33,9 @@ public final class FailoverStrategyFactoryLoader {
     /** Config name for the {@link RestartPipelinedRegionFailoverStrategy}. */
     public static final String PIPELINED_REGION_RESTART_STRATEGY_NAME = "region";
 
+    /** Config name for the {@link RestartSnapshotGroupFailoverStrategy}. */
+    public static final String SNAPSHOT_GROUP_RESTART_STRATEGY_NAME = "snapshot-group";
+
     private FailoverStrategyFactoryLoader() {}
 
     /**
@@ -53,6 +56,9 @@ public final class FailoverStrategyFactoryLoader {
 
             case PIPELINED_REGION_RESTART_STRATEGY_NAME:
                 return new RestartPipelinedRegionFailoverStrategy.Factory();
+
+            case SNAPSHOT_GROUP_RESTART_STRATEGY_NAME:
+                return new RestartSnapshotGroupFailoverStrategy.Factory();
 
             default:
                 throw new IllegalConfigurationException(

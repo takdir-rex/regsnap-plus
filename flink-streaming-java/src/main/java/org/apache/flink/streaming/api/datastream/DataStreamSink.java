@@ -233,6 +233,7 @@ public class DataStreamSink<T> {
 
     /**
      * Sets the snapshot group of this operation
+     *
      * @param snapshotGroup The snapshot group name
      */
     @PublicEvolving

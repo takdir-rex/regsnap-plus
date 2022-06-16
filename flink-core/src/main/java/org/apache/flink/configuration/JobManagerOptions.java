@@ -268,7 +268,7 @@ public class JobManagerOptions {
     public static final ConfigOption<String> EXECUTION_FAILOVER_STRATEGY =
             key("jobmanager.execution.failover-strategy")
                     .stringType()
-                    .defaultValue("region")
+                    .defaultValue("snapshot-group")
                     .withDescription(
                             Description.builder()
                                     .text(
@@ -281,7 +281,9 @@ public class JobManagerOptions {
                                                             + "More details can be found %s.",
                                                     link(
                                                             "{{.Site.BaseURL}}{{.Site.LanguagePrefix}}/docs/ops/state/task_failure_recovery/#restart-pipelined-region-failover-strategy",
-                                                            "here")))
+                                                            "here")),
+                                            text("'snapshot-group': Restarts all tasks having similar snapshot group with the failed task.")
+                                    )
                                     .build());
 
     /** The location where the JobManager stores the archives of completed jobs. */

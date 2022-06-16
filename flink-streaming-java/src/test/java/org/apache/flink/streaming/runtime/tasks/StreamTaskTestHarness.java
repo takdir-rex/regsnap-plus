@@ -240,10 +240,22 @@ public class StreamTaskTestHarness<OUT> {
         List<StreamEdge> outEdgesInOrder = new LinkedList<>();
         StreamNode sourceVertexDummy =
                 new StreamNode(
-                        0, "group", null, null, dummyOperator, "source dummy", SourceStreamTask.class);
+                        0,
+                        "group",
+                        null,
+                        null,
+                        dummyOperator,
+                        "source dummy",
+                        SourceStreamTask.class);
         StreamNode targetVertexDummy =
                 new StreamNode(
-                        1, "group", null, null, dummyOperator, "target dummy", SourceStreamTask.class);
+                        1,
+                        "group",
+                        null,
+                        null,
+                        dummyOperator,
+                        "target dummy",
+                        SourceStreamTask.class);
 
         outEdgesInOrder.add(
                 new StreamEdge(

@@ -151,21 +151,25 @@ public abstract class AbstractFsCheckpointStorageAccess implements CheckpointSto
      */
     @Override
     public CheckpointStorageLocation initializeLocationForSavepoint(
-            @SuppressWarnings("unused") long checkpointId, @Nullable String externalLocationPointer, @Nullable String snapshotGroup)
+            @SuppressWarnings("unused") long checkpointId,
+            @Nullable String externalLocationPointer,
+            @Nullable String snapshotGroup)
             throws IOException {
 
         // determine where to write the savepoint to
 
         final Path savepointBasePath;
         if (externalLocationPointer != null) {
-            if(snapshotGroup != null) {
-                savepointBasePath = new Path(externalLocationPointer, snapshotGroup.replaceAll("\\W+", "-"));
+            if (snapshotGroup != null) {
+                savepointBasePath =
+                        new Path(externalLocationPointer, snapshotGroup.replaceAll("\\W+", "-"));
             } else {
                 savepointBasePath = new Path(externalLocationPointer);
             }
         } else if (defaultSavepointDirectory != null) {
-            if(snapshotGroup != null) {
-                savepointBasePath = new Path(defaultSavepointDirectory, snapshotGroup.replaceAll("\\W+", ""));
+            if (snapshotGroup != null) {
+                savepointBasePath =
+                        new Path(defaultSavepointDirectory, snapshotGroup.replaceAll("\\W+", ""));
             } else {
                 savepointBasePath = defaultSavepointDirectory;
             }

@@ -100,5 +100,8 @@ public interface CheckpointStorageCoordinatorView {
      *     exception.
      */
     CheckpointStorageLocation initializeLocationForSavepoint(
-            long checkpointId, @Nullable String externalLocationPointer, @Nullable String snapshotGroup) throws IOException;
+            long checkpointId,
+            @Nullable String externalLocationPointer,
+            @Nullable String snapshotGroup)
+            throws IOException;
 }

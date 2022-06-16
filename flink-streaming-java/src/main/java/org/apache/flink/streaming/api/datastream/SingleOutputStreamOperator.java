@@ -394,6 +394,7 @@ public class SingleOutputStreamOperator<T> extends DataStream<T> {
 
     /**
      * Sets the snapshot group of this operation
+     *
      * @param snapshotGroup The snapshot group name
      */
     @PublicEvolving

@@ -19,7 +19,6 @@ package org.apache.flink.streaming.examples.join;
 
 import org.apache.flink.api.common.eventtime.*;
 import org.apache.flink.api.common.functions.JoinFunction;
-import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
@@ -37,7 +36,6 @@ import org.apache.flink.streaming.examples.join.WindowJoinSampleData.GradeSource
 import org.apache.flink.streaming.examples.join.WindowJoinSampleData.SalarySource;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Example illustrating a windowed stream join between two data streams.
@@ -49,7 +47,7 @@ import java.util.concurrent.TimeUnit;
  * configurable rate.
  */
 @SuppressWarnings("serial")
-public class WindowJoin2 {
+public class WindowJoin2b {
 
     // *************************************************************************
     // PROGRAM
@@ -92,7 +90,6 @@ public class WindowJoin2 {
                 .setMaxConcurrentCheckpoints(Integer.MAX_VALUE); // as much as possible
 
         env.disableOperatorChaining();
-        env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 5000));
 
         //                env.enableCheckpointing(2000);
         //        env.setStateBackend(new HashMapStateBackend());
@@ -102,14 +99,12 @@ public class WindowJoin2 {
         DataStream<Tuple2<String, Integer>> grades =
                 GradeSource.getSource(env, rate)
                         .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create())
-                        .name("WM grades")
-                        .snapshotGroup("snapshot-0");
+                        .name("WM grades");
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)
                         .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create())
-                        .name("WM salaries")
-                        .snapshotGroup("snapshot-0");
+                        .name("WM salaries");
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
@@ -118,20 +113,18 @@ public class WindowJoin2 {
 
         ((SingleOutputStreamOperator) joinedStream)
                 .uid("join")
-                .name("Join")
-                .snapshotGroup("snapshot-1");
+                .name("Join");
 
         DataStream<Tuple3<String, Integer, Integer>> joinedStream2 =
                 runWindowJoin(grades, salaries, windowSize);
 
         ((SingleOutputStreamOperator) joinedStream2)
                 .uid("join1")
-                .name("Join2")
-                .snapshotGroup("snapshot-2");
+                .name("Join2");
 
         // print the results with a single thread, rather than in parallel
-        joinedStream.addSink(new FailingSink<>()).setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snapshot-1");
-        joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
+        joinedStream.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink").name("Sink");
+        joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2");
 
 //                System.out.println(env.getExecutionPlan());
 

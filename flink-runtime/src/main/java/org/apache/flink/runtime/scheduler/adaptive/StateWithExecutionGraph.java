@@ -221,7 +221,8 @@ abstract class StateWithExecutionGraph implements State {
                 jobId, jobVertexId, keyGroupRange, registrationName);
     }
 
-    CompletableFuture<String> triggerSavepoint(String targetDirectory, boolean cancelJob, String snapshotGroup) {
+    CompletableFuture<String> triggerSavepoint(
+            String targetDirectory, boolean cancelJob, String snapshotGroup) {
         final CheckpointCoordinator checkpointCoordinator =
                 executionGraph.getCheckpointCoordinator();
         if (checkpointCoordinator == null) {

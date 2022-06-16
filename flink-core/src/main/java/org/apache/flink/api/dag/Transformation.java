@@ -431,8 +431,9 @@ public abstract class Transformation<T> {
     }
 
     /**
-     * Set the snapshot group of this transformation. Parallel instances of operations that are
-     * in the same snapshot group will be grouped in the same snapshot region.
+     * Set the snapshot group of this transformation. Parallel instances of operations that are in
+     * the same snapshot group will be grouped in the same snapshot region.
+     *
      * @param snapshotGroup the snapshot group name of this transformation
      */
     public void setSnapshotGroup(@Nullable String snapshotGroup) {
@@ -441,9 +442,10 @@ public abstract class Transformation<T> {
 
     /**
      * Returns the snapshot group of this transformation
+     *
      * @return the snapshot group name of this transformation
      */
-    public String getSnapshotGroup(){
+    public String getSnapshotGroup() {
         return this.snapshotGroup;
     }
 

@@ -48,7 +48,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -57,14 +56,16 @@ public class TestingSchedulerNG implements SchedulerNG {
     private final CompletableFuture<JobStatus> jobTerminationFuture;
     private final Runnable startSchedulingRunnable;
     private final Supplier<CompletableFuture<Void>> closeAsyncSupplier;
-    private final TriFunction<String, Boolean, String, CompletableFuture<String>> triggerSavepointFunction;
+    private final TriFunction<String, Boolean, String, CompletableFuture<String>>
+            triggerSavepointFunction;
     private final Consumer<Throwable> handleGlobalFailureConsumer;
 
     private TestingSchedulerNG(
             CompletableFuture<JobStatus> jobTerminationFuture,
             Runnable startSchedulingRunnable,
             Supplier<CompletableFuture<Void>> closeAsyncSupplier,
-            TriFunction<String, Boolean, String, CompletableFuture<String>> triggerSavepointFunction,
+            TriFunction<String, Boolean, String, CompletableFuture<String>>
+                    triggerSavepointFunction,
             Consumer<Throwable> handleGlobalFailureConsumer) {
         this.jobTerminationFuture = jobTerminationFuture;
         this.startSchedulingRunnable = startSchedulingRunnable;
@@ -231,8 +232,9 @@ public class TestingSchedulerNG implements SchedulerNG {
         private Runnable startSchedulingRunnable = () -> {};
         private Supplier<CompletableFuture<Void>> closeAsyncSupplier =
                 FutureUtils::completedVoidFuture;
-        private TriFunction<String, Boolean, String, CompletableFuture<String>> triggerSavepointFunction =
-                (ignoredA, ignoredB, ignoredC) -> new CompletableFuture<>();
+        private TriFunction<String, Boolean, String, CompletableFuture<String>>
+                triggerSavepointFunction =
+                        (ignoredA, ignoredB, ignoredC) -> new CompletableFuture<>();
         private Consumer<Throwable> handleGlobalFailureConsumer = (ignored) -> {};
 
         public Builder setJobTerminationFuture(CompletableFuture<JobStatus> jobTerminationFuture) {
@@ -251,7 +253,8 @@ public class TestingSchedulerNG implements SchedulerNG {
         }
 
         public Builder setTriggerSavepointFunction(
-                TriFunction<String, Boolean, String, CompletableFuture<String>> triggerSavepointFunction) {
+                TriFunction<String, Boolean, String, CompletableFuture<String>>
+                        triggerSavepointFunction) {
             this.triggerSavepointFunction = triggerSavepointFunction;
             return this;
         }
