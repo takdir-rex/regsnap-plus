@@ -84,7 +84,8 @@ public class TestJobClient implements JobClient, CoordinationRequestGateway {
     }
 
     @Override
-    public CompletableFuture<String> triggerSavepoint(@Nullable String savepointDirectory, @Nullable String snapshotGroup) {
+    public CompletableFuture<String> triggerSavepoint(
+            @Nullable String savepointDirectory, @Nullable String snapshotGroup) {
         throw new UnsupportedOperationException();
     }
 

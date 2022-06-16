@@ -459,7 +459,9 @@ public class CheckpointCoordinator {
      *     savepoint directory has been configured
      */
     public CompletableFuture<CompletedCheckpoint> triggerSynchronousSavepoint(
-            final boolean terminate, @Nullable final String targetLocation, @Nullable final String snapshotGroup) {
+            final boolean terminate,
+            @Nullable final String targetLocation,
+            @Nullable final String snapshotGroup) {
 
         final CheckpointProperties properties =
                 CheckpointProperties.forSyncSavepoint(!unalignedCheckpointsEnabled, terminate);
@@ -469,7 +471,8 @@ public class CheckpointCoordinator {
 
     private CompletableFuture<CompletedCheckpoint> triggerSavepointInternal(
             final CheckpointProperties checkpointProperties,
-            @Nullable final String targetLocation, @Nullable final String snapshotGroup) {
+            @Nullable final String targetLocation,
+            @Nullable final String snapshotGroup) {
 
         checkNotNull(checkpointProperties);
 
@@ -478,7 +481,8 @@ public class CheckpointCoordinator {
         final CompletableFuture<CompletedCheckpoint> resultFuture = new CompletableFuture<>();
         timer.execute(
                 () ->
-                        triggerCheckpoint(checkpointProperties, targetLocation, snapshotGroup, false)
+                        triggerCheckpoint(
+                                        checkpointProperties, targetLocation, snapshotGroup, false)
                                 .whenComplete(
                                         (completedCheckpoint, throwable) -> {
                                             if (throwable == null) {
@@ -519,7 +523,8 @@ public class CheckpointCoordinator {
         }
 
         CheckpointTriggerRequest request =
-                new CheckpointTriggerRequest(props, externalSavepointLocation, snapshotGroup, isPeriodic);
+                new CheckpointTriggerRequest(
+                        props, externalSavepointLocation, snapshotGroup, isPeriodic);
         chooseRequestToExecute(request).ifPresent(this::startTriggeringCheckpoint);
         return request.onCompletionPromise;
     }
@@ -537,10 +542,11 @@ public class CheckpointCoordinator {
             final long timestamp = System.currentTimeMillis();
 
             CompletableFuture<CheckpointPlan> checkpointPlanFuture;
-            if(request.snapshotGroup == null){
+            if (request.snapshotGroup == null) {
                 checkpointPlanFuture = checkpointPlanCalculator.calculateCheckpointPlan();
             } else {
-                checkpointPlanFuture = checkpointPlanCalculator.calculateCheckpointPlan(request.snapshotGroup);
+                checkpointPlanFuture =
+                        checkpointPlanCalculator.calculateCheckpointPlan(request.snapshotGroup);
             }
 
             final CompletableFuture<PendingCheckpoint> pendingCheckpointCompletableFuture =
@@ -731,7 +737,9 @@ public class CheckpointCoordinator {
      * @return the initialized result, checkpoint id and checkpoint location
      */
     private CheckpointIdAndStorageLocation initializeCheckpoint(
-            CheckpointProperties props, @Nullable String externalSavepointLocation, @Nullable String snapshotGroup)
+            CheckpointProperties props,
+            @Nullable String externalSavepointLocation,
+            @Nullable String snapshotGroup)
             throws Exception {
 
         // this must happen outside the coordinator-wide lock, because it
@@ -1282,7 +1290,8 @@ public class CheckpointCoordinator {
 
         LOG.info(
                 "Completed checkpoint {} for job {} ({} bytes, checkpointDuration={} ms, finalizationTime={} ms).",
-                checkpointId,
+//                checkpointId,
+                completedCheckpoint.getExternalPointer().substring(36,46),
                 job,
                 completedCheckpoint.getStateSize(),
                 completedCheckpoint.getCompletionTimestamp() - completedCheckpoint.getTimestamp(),

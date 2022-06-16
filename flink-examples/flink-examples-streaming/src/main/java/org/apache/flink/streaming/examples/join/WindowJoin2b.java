@@ -47,7 +47,7 @@ import java.io.File;
  * configurable rate.
  */
 @SuppressWarnings("serial")
-public class WindowJoin2 {
+public class WindowJoin2b {
 
     // *************************************************************************
     // PROGRAM
@@ -99,14 +99,12 @@ public class WindowJoin2 {
         DataStream<Tuple2<String, Integer>> grades =
                 GradeSource.getSource(env, rate)
                         .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create())
-                        .name("WM grades")
-                        .snapshotGroup("snapshot-0");
+                        .name("WM grades");
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)
                         .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create())
-                        .name("WM salaries")
-                        .snapshotGroup("snapshot-0");
+                        .name("WM salaries");
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
@@ -115,20 +113,18 @@ public class WindowJoin2 {
 
         ((SingleOutputStreamOperator) joinedStream)
                 .uid("join")
-                .name("Join")
-                .snapshotGroup("snapshot-1");
+                .name("Join");
 
         DataStream<Tuple3<String, Integer, Integer>> joinedStream2 =
                 runWindowJoin(grades, salaries, windowSize);
 
         ((SingleOutputStreamOperator) joinedStream2)
                 .uid("join1")
-                .name("Join2")
-                .snapshotGroup("snapshot-2");
+                .name("Join2");
 
         // print the results with a single thread, rather than in parallel
-        joinedStream.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snapshot-1");
-        joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
+        joinedStream.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink").name("Sink");
+        joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2");
 
 //                System.out.println(env.getExecutionPlan());
 

@@ -322,8 +322,7 @@ public class StreamNode {
 
     public boolean isSameSnapshotGroup(StreamNode downstreamVertex) {
         return (snapshotGroup == null && downstreamVertex.snapshotGroup == null)
-                || (snapshotGroup != null
-                && snapshotGroup.equals(downstreamVertex.snapshotGroup));
+                || (snapshotGroup != null && snapshotGroup.equals(downstreamVertex.snapshotGroup));
     }
 
     @Override

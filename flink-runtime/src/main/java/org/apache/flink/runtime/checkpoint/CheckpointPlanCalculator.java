@@ -37,7 +37,6 @@ public interface CheckpointPlanCalculator {
      * Calculates the plan of the next checkpoint with targeted snapshot group
      *
      * @param snapshotGroup targeted snapshot group
-     *
      * @return The result plan.
      */
     CompletableFuture<CheckpointPlan> calculateCheckpointPlan(String snapshotGroup);

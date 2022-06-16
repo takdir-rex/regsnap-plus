@@ -488,7 +488,9 @@ public class RestClusterClient<T> implements ClusterClient<T> {
 
     @Override
     public CompletableFuture<String> triggerSavepoint(
-            final JobID jobId, final @Nullable String savepointDirectory, final @Nullable String snapshotGroup) {
+            final JobID jobId,
+            final @Nullable String savepointDirectory,
+            final @Nullable String snapshotGroup) {
         return triggerSavepoint(jobId, savepointDirectory, false, snapshotGroup);
     }
 
@@ -524,7 +526,10 @@ public class RestClusterClient<T> implements ClusterClient<T> {
     }
 
     private CompletableFuture<String> triggerSavepoint(
-            final JobID jobId, final @Nullable String savepointDirectory, final boolean cancelJob, final @Nullable String snapshotGroup) {
+            final JobID jobId,
+            final @Nullable String savepointDirectory,
+            final boolean cancelJob,
+            final @Nullable String snapshotGroup) {
         final SavepointTriggerHeaders savepointTriggerHeaders =
                 SavepointTriggerHeaders.getInstance();
         final SavepointTriggerMessageParameters savepointTriggerMessageParameters =
@@ -535,7 +540,8 @@ public class RestClusterClient<T> implements ClusterClient<T> {
                 sendRequest(
                         savepointTriggerHeaders,
                         savepointTriggerMessageParameters,
-                        new SavepointTriggerRequestBody(savepointDirectory, cancelJob, snapshotGroup));
+                        new SavepointTriggerRequestBody(
+                                savepointDirectory, cancelJob, snapshotGroup));
 
         return responseFuture
                 .thenCompose(

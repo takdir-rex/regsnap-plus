@@ -324,7 +324,9 @@ public class ExecutionJobVertex
         return slotSharingGroup;
     }
 
-    public String getSnapshotGroup() { return snapshotGroup; }
+    public String getSnapshotGroup() {
+        return snapshotGroup;
+    }
 
     @Nullable
     public CoLocationGroup getCoLocationGroup() {
@@ -349,6 +351,7 @@ public class ExecutionJobVertex
 
                 final TaskInformation taskInformation =
                         new TaskInformation(
+                                jobVertex,
                                 jobVertex.getID(),
                                 jobVertex.getName(),
                                 parallelismInfo.getParallelism(),

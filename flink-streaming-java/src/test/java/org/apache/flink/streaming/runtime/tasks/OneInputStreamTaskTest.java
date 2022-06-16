@@ -1013,7 +1013,13 @@ public class OneInputStreamTaskTest extends TestLogger {
                                     null,
                                     null),
                             new StreamNode(
-                                    chainedIndex, null, null, null, (StreamOperator<?>) null, null, null),
+                                    chainedIndex,
+                                    null,
+                                    null,
+                                    null,
+                                    (StreamOperator<?>) null,
+                                    null,
+                                    null),
                             0,
                             null,
                             null);

@@ -50,9 +50,11 @@ public class MockStreamConfig extends StreamConfig {
                 };
 
         StreamNode sourceVertex =
-                new StreamNode(0, null, null, null, dummyOperator, "source", SourceStreamTask.class);
+                new StreamNode(
+                        0, null, null, null, dummyOperator, "source", SourceStreamTask.class);
         StreamNode targetVertex =
-                new StreamNode(1, null, null, null, dummyOperator, "target", SourceStreamTask.class);
+                new StreamNode(
+                        1, null, null, null, dummyOperator, "target", SourceStreamTask.class);
 
         List<StreamEdge> outEdgesInOrder = new ArrayList<>(numberOfOutputs);
         for (int i = 0; i < numberOfOutputs; i++) {

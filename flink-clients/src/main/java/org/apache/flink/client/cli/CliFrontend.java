@@ -758,13 +758,18 @@ public class CliFrontend {
             runClusterAction(
                     activeCommandLine,
                     commandLine,
-                    clusterClient -> triggerSavepoint(clusterClient, jobId, savepointDirectory, snapshotGroup));
+                    clusterClient ->
+                            triggerSavepoint(
+                                    clusterClient, jobId, savepointDirectory, snapshotGroup));
         }
     }
 
     /** Sends a SavepointTriggerMessage to the job manager. */
     private void triggerSavepoint(
-            ClusterClient<?> clusterClient, JobID jobId, String savepointDirectory, String snapshotGroup)
+            ClusterClient<?> clusterClient,
+            JobID jobId,
+            String savepointDirectory,
+            String snapshotGroup)
             throws FlinkException {
         logAndSysout("Triggering savepoint for job " + jobId + '.');
 

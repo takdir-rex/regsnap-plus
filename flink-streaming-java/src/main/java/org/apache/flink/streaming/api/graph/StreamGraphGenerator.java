@@ -814,7 +814,12 @@ public class StreamGraphGenerator {
                                 .collect(Collectors.toList()));
 
         final TransformationTranslator.Context context =
-                new ContextImpl(this, streamGraph, slotSharingGroup, transform.getSnapshotGroup(), configuration);
+                new ContextImpl(
+                        this,
+                        streamGraph,
+                        slotSharingGroup,
+                        transform.getSnapshotGroup(),
+                        configuration);
 
         return shouldExecuteInBatchMode
                 ? translator.translateForBatch(transform, context)

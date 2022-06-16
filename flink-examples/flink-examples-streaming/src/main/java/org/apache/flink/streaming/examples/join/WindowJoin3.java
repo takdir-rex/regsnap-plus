@@ -19,7 +19,6 @@ package org.apache.flink.streaming.examples.join;
 
 import org.apache.flink.api.common.eventtime.*;
 import org.apache.flink.api.common.functions.JoinFunction;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
@@ -28,7 +27,6 @@ import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.StateBackendOptions;
 import org.apache.flink.connector.base.DeliveryGuarantee;
-import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
@@ -74,70 +72,83 @@ public class WindowJoin3 {
         final File savepointDir = new File("/Users/takdir/tmp/savepoint");
 
         conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
-        conf.setString(CheckpointingOptions.CHECKPOINTS_DIRECTORY, checkpointDir.toURI().toString());
+        conf.setString(
+                CheckpointingOptions.CHECKPOINTS_DIRECTORY, checkpointDir.toURI().toString());
         conf.setString(CheckpointingOptions.SAVEPOINT_DIRECTORY, savepointDir.toURI().toString());
 
         // obtain execution environment, run this example in "ingestion time"
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(conf);
+        StreamExecutionEnvironment env =
+                StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(conf);
 
         // make parameters available in the web interface
         env.getConfig().setGlobalJobParameters(params);
 
-        //setting for concurrent partial snapshots
+        // setting for concurrent partial snapshots
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(0);
-        env.getCheckpointConfig().setCheckpointTimeout(60000); //checkpoints have to complete within one minute, or are discarded
-        env.getCheckpointConfig().setTolerableCheckpointFailureNumber(0); //shutdown job if failure found
-        env.getCheckpointConfig().setMaxConcurrentCheckpoints(Integer.MAX_VALUE); //as much as possible
-
+        env.getCheckpointConfig()
+                .setCheckpointTimeout(
+                        60000); // checkpoints have to complete within one minute, or are discarded
+        env.getCheckpointConfig()
+                .setTolerableCheckpointFailureNumber(0); // shutdown job if failure found
+        env.getCheckpointConfig()
+                .setMaxConcurrentCheckpoints(Integer.MAX_VALUE); // as much as possible
 
         //        env.enableCheckpointing(2000);
-//        env.setStateBackend(new HashMapStateBackend());
-//        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
+        //        env.setStateBackend(new HashMapStateBackend());
+        //        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
 
         final String BOOTSTRAP_SERVER = "localhost:9092";
         Properties producerProps = new Properties();
         producerProps.put("bootstrap.servers", BOOTSTRAP_SERVER);
-        producerProps.put("transaction.timeout.ms", 1000*60*5+"");
+        producerProps.put("transaction.timeout.ms", 1000 * 60 * 5 + "");
         final String TOPIC_1 = "t1";
         final String TOPIC_2 = "t2";
 
-        KafkaSink<Tuple2<String, Integer>> sink1 = KafkaSink.<Tuple2<String, Integer>>builder()
-                .setBootstrapServers(BOOTSTRAP_SERVER)
-                .setKafkaProducerConfig(producerProps)
-                .setRecordSerializer(new TopicOutputSchema(TOPIC_1))
-                .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
-                .build();
+        KafkaSink<Tuple2<String, Integer>> sink1 =
+                KafkaSink.<Tuple2<String, Integer>>builder()
+                        .setBootstrapServers(BOOTSTRAP_SERVER)
+                        .setKafkaProducerConfig(producerProps)
+                        .setRecordSerializer(new TopicOutputSchema(TOPIC_1))
+                        .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
+                        .build();
 
-        KafkaSink<Tuple2<String, Integer>> sink2 = KafkaSink.<Tuple2<String, Integer>>builder()
-                .setBootstrapServers(BOOTSTRAP_SERVER)
-                .setKafkaProducerConfig(producerProps)
-                .setRecordSerializer(new TopicOutputSchema(TOPIC_2))
-                .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
-                .build();
+        KafkaSink<Tuple2<String, Integer>> sink2 =
+                KafkaSink.<Tuple2<String, Integer>>builder()
+                        .setBootstrapServers(BOOTSTRAP_SERVER)
+                        .setKafkaProducerConfig(producerProps)
+                        .setRecordSerializer(new TopicOutputSchema(TOPIC_2))
+                        .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
+                        .build();
 
         // create the data sources for both grades and salaries
-                GradeSource.getSource(env, rate).forward().sinkTo(sink1).setParallelism(1);
+        GradeSource.getSource(env, rate).forward().sinkTo(sink1).setParallelism(1);
 
-                SalarySource.getSource(env, rate).forward().sinkTo(sink2).setParallelism(1);
+        SalarySource.getSource(env, rate).forward().sinkTo(sink2).setParallelism(1);
 
-        KafkaSource<Tuple2<String, Integer>> source1 = KafkaSource.<Tuple2<String, Integer>>builder()
-                .setBootstrapServers(BOOTSTRAP_SERVER)
-                .setTopics(TOPIC_1)
-                .setGroupId("group-1")
-                .setStartingOffsets(OffsetsInitializer.earliest())
-                .setValueOnlyDeserializer(new TopicInputSchema())
-                .build();
+        KafkaSource<Tuple2<String, Integer>> source1 =
+                KafkaSource.<Tuple2<String, Integer>>builder()
+                        .setBootstrapServers(BOOTSTRAP_SERVER)
+                        .setTopics(TOPIC_1)
+                        .setGroupId("group-1")
+                        .setStartingOffsets(OffsetsInitializer.earliest())
+                        .setValueOnlyDeserializer(new TopicInputSchema())
+                        .build();
 
-        KafkaSource<Tuple2<String, Integer>> source2 = KafkaSource.<Tuple2<String, Integer>>builder()
-                .setBootstrapServers(BOOTSTRAP_SERVER)
-                .setTopics(TOPIC_2)
-                .setGroupId("group-2")
-                .setStartingOffsets(OffsetsInitializer.earliest())
-                .setValueOnlyDeserializer(new TopicInputSchema())
-                .build();
+        KafkaSource<Tuple2<String, Integer>> source2 =
+                KafkaSource.<Tuple2<String, Integer>>builder()
+                        .setBootstrapServers(BOOTSTRAP_SERVER)
+                        .setTopics(TOPIC_2)
+                        .setGroupId("group-2")
+                        .setStartingOffsets(OffsetsInitializer.earliest())
+                        .setValueOnlyDeserializer(new TopicInputSchema())
+                        .build();
 
-        DataStream<Tuple2<String, Integer>> grades = env.fromSource(source1, IngestionTimeWatermarkStrategy.create(),"grades").setParallelism(1);
-        DataStream<Tuple2<String, Integer>> salaries = env.fromSource(source2, IngestionTimeWatermarkStrategy.create(),"salaries").setParallelism(1);
+        DataStream<Tuple2<String, Integer>> grades =
+                env.fromSource(source1, IngestionTimeWatermarkStrategy.create(), "grades")
+                        .setParallelism(1);
+        DataStream<Tuple2<String, Integer>> salaries =
+                env.fromSource(source2, IngestionTimeWatermarkStrategy.create(), "salaries")
+                        .setParallelism(1);
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
@@ -149,7 +160,7 @@ public class WindowJoin3 {
         // print the results with a single thread, rather than in parallel
         joinedStream.print().setParallelism(1).uid("Sink");
 
-//        System.out.println(env.getExecutionPlan());
+        //        System.out.println(env.getExecutionPlan());
 
         // execute program
         env.execute("Windowed Join Example");

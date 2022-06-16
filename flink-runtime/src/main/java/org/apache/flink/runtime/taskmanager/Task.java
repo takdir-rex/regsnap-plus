@@ -420,6 +420,12 @@ public class Task
                         .createInputGates(taskShuffleContext, this, inputGateDeploymentDescriptors)
                         .toArray(new IndexedInputGate[0]);
 
+        if(taskInformation.getJobVertex().isSourceOfSnapshotGroup()){
+            for(IndexedInputGate idxInputGate : gates){
+                idxInputGate.setupBackupPartition();
+            }
+        }
+
         this.inputGates = new IndexedInputGate[gates.length];
         this.throughputCalculator =
                 new ThroughputCalculator(

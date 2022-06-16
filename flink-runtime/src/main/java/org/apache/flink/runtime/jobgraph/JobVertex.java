@@ -579,18 +579,18 @@ public class JobVertex implements java.io.Serializable {
         this.resultOptimizerProperties = resultOptimizerProperties;
     }
 
-    public boolean isSourceOfSnapshotGroup(){
-        if(this.getSnapshotGroup() == null){
+    public boolean isSourceOfSnapshotGroup() {
+        if (this.getSnapshotGroup() == null) {
             return false;
         }
-        if(isInputVertex()){
+        if (isInputVertex()) {
             return true;
         }
         boolean sourceOfSnapshotGroup = true;
-        for(JobEdge jobEdge : getInputs()){
+        for (JobEdge jobEdge : getInputs()) {
             String snapGroup = jobEdge.getSource().getProducer().getSnapshotGroup();
-            if(snapGroup != null){
-                if (snapGroup.equals(snapshotGroup)){
+            if (snapGroup != null) {
+                if (snapGroup.equals(snapshotGroup)) {
                     sourceOfSnapshotGroup = false;
                 }
             }
@@ -605,9 +605,7 @@ public class JobVertex implements java.io.Serializable {
         return this.name + " (" + this.invokableClassName + ')';
     }
 
-    /**
-     * Optionally, a snapshot group of this vertex
-     */
+    /** Optionally, a snapshot group of this vertex */
     @Nullable
     public String getSnapshotGroup() {
         return snapshotGroup;

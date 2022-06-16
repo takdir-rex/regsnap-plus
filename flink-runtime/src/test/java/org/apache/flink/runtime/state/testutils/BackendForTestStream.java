@@ -100,7 +100,9 @@ public class BackendForTestStream extends MemoryStateBackend {
 
         @Override
         public CheckpointStorageLocation initializeLocationForSavepoint(
-                long checkpointId, @Nullable String externalLocationPointer, @Nullable String snapshotGroup) {
+                long checkpointId,
+                @Nullable String externalLocationPointer,
+                @Nullable String snapshotGroup) {
             throw new UnsupportedOperationException();
         }
 

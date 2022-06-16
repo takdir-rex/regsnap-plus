@@ -239,7 +239,8 @@ public class RescalingITCase extends TestLogger {
             CollectionSink.clearElementsSet();
 
             waitForAllTaskRunning(cluster.getMiniCluster(), jobGraph.getJobID(), false);
-            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null, null);
+            CompletableFuture<String> savepointPathFuture =
+                    client.triggerSavepoint(jobID, null, null);
 
             final String savepointPath =
                     savepointPathFuture.get(deadline.timeLeft().toMillis(), TimeUnit.MILLISECONDS);
@@ -321,7 +322,8 @@ public class RescalingITCase extends TestLogger {
             // wait until the operator handles some data
             StateSourceBase.workStartedLatch.await();
 
-            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null, null);
+            CompletableFuture<String> savepointPathFuture =
+                    client.triggerSavepoint(jobID, null, null);
 
             final String savepointPath =
                     savepointPathFuture.get(deadline.timeLeft().toMillis(), TimeUnit.MILLISECONDS);
@@ -419,7 +421,8 @@ public class RescalingITCase extends TestLogger {
             CollectionSink.clearElementsSet();
 
             waitForAllTaskRunning(cluster.getMiniCluster(), jobGraph.getJobID(), false);
-            CompletableFuture<String> savepointPathFuture = client.triggerSavepoint(jobID, null, null);
+            CompletableFuture<String> savepointPathFuture =
+                    client.triggerSavepoint(jobID, null, null);
 
             final String savepointPath =
                     savepointPathFuture.get(deadline.timeLeft().toMillis(), TimeUnit.MILLISECONDS);

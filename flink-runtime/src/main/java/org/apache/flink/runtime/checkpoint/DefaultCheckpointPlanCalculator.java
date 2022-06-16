@@ -24,13 +24,10 @@ import org.apache.flink.runtime.execution.ExecutionState;
 import org.apache.flink.runtime.executiongraph.Execution;
 import org.apache.flink.runtime.executiongraph.ExecutionJobVertex;
 import org.apache.flink.runtime.executiongraph.ExecutionVertex;
-import org.apache.flink.runtime.executiongraph.IntermediateResult;
 import org.apache.flink.runtime.executiongraph.InternalExecutionGraphAccessor;
 import org.apache.flink.runtime.jobgraph.DistributionPattern;
-import org.apache.flink.runtime.jobgraph.IntermediateDataSet;
 import org.apache.flink.runtime.jobgraph.IntermediateResultPartitionID;
 import org.apache.flink.runtime.jobgraph.JobEdge;
-import org.apache.flink.runtime.jobgraph.JobVertex;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 
 import java.util.ArrayList;
@@ -164,7 +161,8 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
 
     private void checkAllTasksInitiated(final String snapshotGroup) throws CheckpointException {
         for (ExecutionVertex task : allTasks) {
-            if (task.getCurrentExecutionAttempt() == null && task.getJobVertex().getSnapshotGroup().equals(snapshotGroup)) {
+            if (task.getCurrentExecutionAttempt() == null
+                    && task.getJobVertex().getSnapshotGroup().equals(snapshotGroup)) {
                 throw new CheckpointException(
                         String.format(
                                 "task %s of job %s is not being executed at the moment. Aborting checkpoint.",
@@ -221,11 +219,11 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         List<ExecutionVertex> targetedSourceTasks = new ArrayList<>();
 
         for (ExecutionJobVertex jobVertex : jobVerticesInTopologyOrder) {
-            if(jobVertex.getSnapshotGroup() != null){
-                if(jobVertex.getSnapshotGroup().equals(snapshotGroup)){
+            if (jobVertex.getSnapshotGroup() != null) {
+                if (jobVertex.getSnapshotGroup().equals(snapshotGroup)) {
                     targetedTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
 
-                    if(jobVertex.getJobVertex().isSourceOfSnapshotGroup()){
+                    if (jobVertex.getJobVertex().isSourceOfSnapshotGroup()) {
                         targetedSourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
                     }
                 }
@@ -236,7 +234,6 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
                 targetedSourceTasks.stream()
                         .map(ExecutionVertex::getCurrentExecutionAttempt)
                         .collect(Collectors.toList());
-
 
         List<Execution> tasksToWaitFor = createTaskToWaitFor(targetedTasks);
 
@@ -321,7 +318,8 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         // First collect the task running status into BitSet so that we could
         // do JobVertex level judgement for some vertices and avoid time-consuming
         // access to volatile isFinished flag of Execution.
-        Map<JobVertexID, BitSet> taskRunningStatusByVertex = collectTaskRunningStatus(snapshotGroup);
+        Map<JobVertexID, BitSet> taskRunningStatusByVertex =
+                collectTaskRunningStatus(snapshotGroup);
 
         List<Execution> tasksToTrigger = new ArrayList<>();
         List<Execution> tasksToWaitFor = new ArrayList<>();
@@ -330,9 +328,10 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         List<ExecutionJobVertex> fullyFinishedJobVertex = new ArrayList<>();
 
         for (ExecutionJobVertex jobVertex : jobVerticesInTopologyOrder) {
-            if(jobVertex.getSnapshotGroup() != null){
-                if(jobVertex.getSnapshotGroup().equals(snapshotGroup)){
-                    BitSet taskRunningStatus = taskRunningStatusByVertex.get(jobVertex.getJobVertexId());
+            if (jobVertex.getSnapshotGroup() != null) {
+                if (jobVertex.getSnapshotGroup().equals(snapshotGroup)) {
+                    BitSet taskRunningStatus =
+                            taskRunningStatusByVertex.get(jobVertex.getJobVertexId());
 
                     if (taskRunningStatus.cardinality() == 0) {
                         fullyFinishedJobVertex.add(jobVertex);
@@ -346,7 +345,8 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
 
                     List<JobEdge> prevJobEdges = jobVertex.getJobVertex().getInputs();
 
-                    // this is an optimization: we determine at the JobVertex level if some tasks can even
+                    // this is an optimization: we determine at the JobVertex level if some tasks
+                    // can even
                     // be eligible for being in the "triggerTo" set.
                     boolean someTasksMustBeTriggered =
                             someTasksMustBeTriggered(taskRunningStatusByVertex, prevJobEdges);
@@ -477,12 +477,14 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         Map<JobVertexID, BitSet> runningStatusByVertex = new HashMap<>();
 
         for (ExecutionJobVertex vertex : jobVerticesInTopologyOrder) {
-            if(vertex.getSnapshotGroup() != null){
-                if(vertex.getSnapshotGroup().equals(snapshotGroup)){
+            if (vertex.getSnapshotGroup() != null) {
+                if (vertex.getSnapshotGroup().equals(snapshotGroup)) {
                     BitSet runningTasks = new BitSet(vertex.getTaskVertices().length);
 
                     for (int i = 0; i < vertex.getTaskVertices().length; ++i) {
-                        if (!vertex.getTaskVertices()[i].getCurrentExecutionAttempt().isFinished()) {
+                        if (!vertex.getTaskVertices()[i]
+                                .getCurrentExecutionAttempt()
+                                .isFinished()) {
                             runningTasks.set(i);
                         }
                     }
@@ -504,10 +506,10 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         return tasksToAck;
     }
 
-    private boolean hasFinishedTask(final String snapshotGroup){
+    private boolean hasFinishedTask(final String snapshotGroup) {
         for (ExecutionJobVertex vertex : jobVerticesInTopologyOrder) {
-            if(vertex.getSnapshotGroup() != null){
-                if(vertex.getSnapshotGroup().equals(snapshotGroup)){
+            if (vertex.getSnapshotGroup() != null) {
+                if (vertex.getSnapshotGroup().equals(snapshotGroup)) {
                     for (int i = 0; i < vertex.getTaskVertices().length; ++i) {
                         if (vertex.getTaskVertices()[i].getCurrentExecutionAttempt().isFinished()) {
                             return true;

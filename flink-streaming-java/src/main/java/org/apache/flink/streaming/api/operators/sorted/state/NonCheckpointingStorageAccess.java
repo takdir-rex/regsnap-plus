@@ -55,7 +55,9 @@ class NonCheckpointingStorageAccess implements CheckpointStorageAccess {
 
     @Override
     public CheckpointStorageLocation initializeLocationForSavepoint(
-            long checkpointId, @Nullable String externalLocationPointer, @Nullable String snapshotGroup) {
+            long checkpointId,
+            @Nullable String externalLocationPointer,
+            @Nullable String snapshotGroup) {
         throw new UnsupportedOperationException(
                 "Checkpoints are not supported in a single key state backend");
     }

@@ -316,6 +316,9 @@ public class CheckpointRequestDeciderTest {
 
     private static CheckpointTriggerRequest checkpointRequest(boolean periodic) {
         return new CheckpointTriggerRequest(
-                CheckpointProperties.forCheckpoint(NEVER_RETAIN_AFTER_TERMINATION), null, null, periodic);
+                CheckpointProperties.forCheckpoint(NEVER_RETAIN_AFTER_TERMINATION),
+                null,
+                null,
+                periodic);
     }
 }

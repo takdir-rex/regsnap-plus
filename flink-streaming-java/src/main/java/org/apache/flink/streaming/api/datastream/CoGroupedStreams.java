@@ -379,11 +379,13 @@ public class CoGroupedStreams<T1, T2> {
             DataStream<TaggedUnion<T1, T2>> taggedInput1 =
                     input1.map(new Input1Tagger<T1, T2>())
                             .setParallelism(input1.getParallelism())
-                            .returns(unionType).snapshotGroup(input1.getTransformation().getSnapshotGroup());
+                            .returns(unionType)
+                            .snapshotGroup(input1.getTransformation().getSnapshotGroup());
             DataStream<TaggedUnion<T1, T2>> taggedInput2 =
                     input2.map(new Input2Tagger<T1, T2>())
                             .setParallelism(input2.getParallelism())
-                            .returns(unionType).snapshotGroup(input2.getTransformation().getSnapshotGroup());
+                            .returns(unionType)
+                            .snapshotGroup(input2.getTransformation().getSnapshotGroup());
 
             DataStream<TaggedUnion<T1, T2>> unionStream = taggedInput1.union(taggedInput2);
 

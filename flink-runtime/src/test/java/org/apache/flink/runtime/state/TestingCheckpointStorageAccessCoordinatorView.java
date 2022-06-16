@@ -82,7 +82,10 @@ public class TestingCheckpointStorageAccessCoordinatorView
 
     @Override
     public CheckpointStorageLocation initializeLocationForSavepoint(
-            long checkpointId, @Nullable String externalLocationPointer, @Nullable String snapshotGroup) throws IOException {
+            long checkpointId,
+            @Nullable String externalLocationPointer,
+            @Nullable String snapshotGroup)
+            throws IOException {
         return new NonPersistentMetadataCheckpointStorageLocation(Integer.MAX_VALUE);
     }
 

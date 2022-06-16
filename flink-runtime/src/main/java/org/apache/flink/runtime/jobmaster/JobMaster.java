@@ -786,9 +786,12 @@ public class JobMaster extends PermanentlyFencedRpcEndpoint<JobMasterId>
 
     @Override
     public CompletableFuture<String> triggerSavepoint(
-            @Nullable final String targetDirectory, final boolean cancelJob, @Nullable final String snapshotGroup, final Time timeout) {
+            @Nullable final String targetDirectory,
+            final boolean cancelJob,
+            @Nullable final String snapshotGroup,
+            final Time timeout) {
 
-        return schedulerNG.triggerSavepoint(targetDirectory, cancelJob,snapshotGroup);
+        return schedulerNG.triggerSavepoint(targetDirectory, cancelJob, snapshotGroup);
     }
 
     @Override

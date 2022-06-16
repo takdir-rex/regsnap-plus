@@ -1458,8 +1458,8 @@ public class JobMasterTest extends TestLogger {
     }
 
     /**
-     * Tests that the timeout in {@link JobMasterGateway#triggerSavepoint(String, boolean, String, Time)} is
-     * respected.
+     * Tests that the timeout in {@link JobMasterGateway#triggerSavepoint(String, boolean, String,
+     * Time)} is respected.
      */
     @Test
     public void testTriggerSavepointTimeout() throws Exception {
