@@ -2,13 +2,14 @@ package org.apache.flink.streaming.examples.join;
 
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 
-public class FailingSink<T> implements SinkFunction<T> {
+import java.util.Calendar;
 
-    private long statTime = System.currentTimeMillis();
+public class FailingSink<T> implements SinkFunction<T> {
 
     @Override
     public void invoke(T value, Context context) throws Exception {
-        if(System.currentTimeMillis() - statTime > 10_000){
+        System.out.println("Sink 2: " + value);
+        if(Calendar.getInstance().get(Calendar.SECOND) == 0){
             throw new Exception("Simulate failed");
         }
     }

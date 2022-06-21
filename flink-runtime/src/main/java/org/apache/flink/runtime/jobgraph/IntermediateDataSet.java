@@ -68,6 +68,12 @@ public class IntermediateDataSet implements java.io.Serializable {
     }
 
     public ResultPartitionType getResultType() {
+        String producerSnapshotGroup = producer.getSnapshotGroup();
+        for(JobEdge edge : consumers){
+            if(edge.getTarget().getSnapshotGroup() != producerSnapshotGroup){
+                return ResultPartitionType.PIPELINED_APPROXIMATE;
+            }
+        }
         return resultType;
     }
 

@@ -268,7 +268,7 @@ public class JobManagerOptions {
     public static final ConfigOption<String> EXECUTION_FAILOVER_STRATEGY =
             key("jobmanager.execution.failover-strategy")
                     .stringType()
-                    .defaultValue("snapshot-group")
+                    .defaultValue("region")
                     .withDescription(
                             Description.builder()
                                     .text(
