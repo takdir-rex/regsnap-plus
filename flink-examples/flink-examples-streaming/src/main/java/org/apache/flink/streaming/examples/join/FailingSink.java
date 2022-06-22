@@ -10,7 +10,7 @@ public class FailingSink<T> implements SinkFunction<T> {
     public void invoke(T value, Context context) throws Exception {
         System.out.println("Sink 2: " + value);
         if(Calendar.getInstance().get(Calendar.SECOND) == 0){
-            throw new Exception("Simulate failed");
+//            throw new Exception("Simulate failed");
         }
     }
 }

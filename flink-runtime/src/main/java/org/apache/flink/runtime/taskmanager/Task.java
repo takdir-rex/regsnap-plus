@@ -420,23 +420,22 @@ public class Task
                         .createInputGates(taskShuffleContext, this, inputGateDeploymentDescriptors)
                         .toArray(new IndexedInputGate[0]);
 
-        if(taskInformation.getJobVertex().isSourceOfSnapshotGroup()){
-            for(IndexedInputGate idxInputGate : gates){
-                idxInputGate.setupBackupPartition();
-            }
-        }
-
         this.inputGates = new IndexedInputGate[gates.length];
         this.throughputCalculator =
                 new ThroughputCalculator(
                         SystemClock.getInstance(), tmConfig.get(BUFFER_DEBLOAT_SAMPLES));
         int counter = 0;
+        boolean isSourceOfSnapshotGroup = taskInformation.getJobVertex().isSourceOfSnapshotGroup();
         for (IndexedInputGate gate : gates) {
-            inputGates[counter++] =
+            inputGates[counter] =
                     new InputGateWithMetrics(
                             gate,
                             metrics.getIOMetricGroup().getNumBytesInCounter(),
                             throughputCalculator);
+//            if(isSourceOfSnapshotGroup) {
+//                inputGates[counter].setupBackupPartition();
+//            }
+            counter++;
         }
 
         if (shuffleEnvironment instanceof NettyShuffleEnvironment) {

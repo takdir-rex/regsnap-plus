@@ -21,6 +21,7 @@ import org.apache.flink.runtime.checkpoint.CheckpointException;
 import org.apache.flink.runtime.checkpoint.channel.InputChannelInfo;
 import org.apache.flink.runtime.io.disk.FileChannelManagerImpl;
 import org.apache.flink.runtime.io.network.api.CheckpointBarrier;
+import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.buffer.BufferConsumer;
 import org.apache.flink.runtime.io.network.partition.BoundedBlockingResultPartition;
 import org.apache.flink.runtime.io.network.partition.BoundedBlockingSubpartitionType;
@@ -37,7 +38,7 @@ import java.util.List;
 /** An {@link InputGate} with a specific index. */
 public abstract class IndexedInputGate extends InputGate implements CheckpointableInput {
 
-    private ResultSubpartition backupPartition = null;
+    private volatile ResultSubpartition backupPartition = null;
 
     /** Returns the index of this input gate. Only supported on */
     public abstract int getGateIndex();
@@ -110,7 +111,9 @@ public abstract class IndexedInputGate extends InputGate implements Checkpointab
         if(backupPartition != null){
             //persist to the storage
             try {
-                backupPartition.add(new BufferConsumer(bufferOrEvent.getBuffer(), bufferOrEvent.getSize()));
+                Buffer buffer = bufferOrEvent.getBuffer().retainBuffer();
+                backupPartition.add(new BufferConsumer(buffer, buffer.getSize()));
+                backupPartition.flush();
             } catch (IOException e) {
                 System.err.println(e);
             }
