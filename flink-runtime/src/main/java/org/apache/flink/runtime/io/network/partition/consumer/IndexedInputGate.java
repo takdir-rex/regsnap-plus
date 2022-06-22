@@ -85,7 +85,7 @@ public abstract class IndexedInputGate extends InputGate implements Checkpointab
 
     public void setupBackupPartition() {
         try {
-            String pathname = "C:\\Users\\Takdir\\tmp\\inputlog\\gate_" + getGateIndex();
+            String pathname = System.getProperty("user.home") + File.separator + "tmp" + File.separator + "inputlog" + File.separator + "gate_" + getGateIndex();
             Files.createDirectories(Paths.get(pathname));
             BoundedBlockingResultPartition parent =
                     (BoundedBlockingResultPartition)

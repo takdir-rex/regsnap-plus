@@ -66,8 +66,8 @@ public class WindowJoin2 {
                 "To customize example, use: WindowJoin [--windowSize <window-size-in-millis>] [--rate <elements-per-second>]");
 
         Configuration conf = new Configuration();
-        final File checkpointDir = new File("C:\\Users\\Takdir\\tmp\\checkpoint");
-        final File savepointDir = new File("C:\\Users\\Takdir\\tmp\\savepoint");
+        final File checkpointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "checkpoint");
+        final File savepointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "savepoint");
 
         conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
         conf.setString(
