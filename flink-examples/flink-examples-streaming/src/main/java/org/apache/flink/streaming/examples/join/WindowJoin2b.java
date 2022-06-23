@@ -19,6 +19,7 @@ package org.apache.flink.streaming.examples.join;
 
 import org.apache.flink.api.common.eventtime.*;
 import org.apache.flink.api.common.functions.JoinFunction;
+import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
@@ -64,8 +65,8 @@ public class WindowJoin2b {
                 "To customize example, use: WindowJoin [--windowSize <window-size-in-millis>] [--rate <elements-per-second>]");
 
         Configuration conf = new Configuration();
-        final File checkpointDir = new File("C:\\Users\\Takdir\\tmp\\checkpoint");
-        final File savepointDir = new File("C:\\Users\\Takdir\\tmp\\savepoint");
+        final File checkpointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "checkpoint");
+        final File savepointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "savepoint");
 
         conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
         conf.setString(
@@ -90,6 +91,7 @@ public class WindowJoin2b {
                 .setMaxConcurrentCheckpoints(Integer.MAX_VALUE); // as much as possible
 
         env.disableOperatorChaining();
+        env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 5000));
 
         //                env.enableCheckpointing(2000);
         //        env.setStateBackend(new HashMapStateBackend());
@@ -123,7 +125,7 @@ public class WindowJoin2b {
                 .name("Join2");
 
         // print the results with a single thread, rather than in parallel
-        joinedStream.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink").name("Sink");
+        joinedStream.addSink(new FailingSink<>()).setParallelism(1).uid("Sink").name("Sink");
         joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2");
 
 //                System.out.println(env.getExecutionPlan());

@@ -131,7 +131,7 @@ public class WindowJoin2 {
 
         // print the results with a single thread, rather than in parallel
         joinedStream.addSink(new FailingSink<>()).setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snapshot-1");
-        joinedStream2.print().setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
+        joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
 
 //                System.out.println(env.getExecutionPlan());
 
