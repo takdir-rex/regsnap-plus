@@ -432,9 +432,6 @@ public class Task
                             gate,
                             metrics.getIOMetricGroup().getNumBytesInCounter(),
                             throughputCalculator);
-//            if(isSourceOfSnapshotGroup) {
-//                inputGates[counter].setupBackupPartition();
-//            }
             counter++;
         }
 

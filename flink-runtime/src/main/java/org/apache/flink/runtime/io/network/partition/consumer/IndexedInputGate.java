@@ -38,8 +38,6 @@ import java.util.List;
 /** An {@link InputGate} with a specific index. */
 public abstract class IndexedInputGate extends InputGate implements CheckpointableInput {
 
-    private volatile ResultSubpartition backupPartition = null;
-
     /** Returns the index of this input gate. Only supported on */
     public abstract int getGateIndex();
 
@@ -83,41 +81,4 @@ public abstract class IndexedInputGate extends InputGate implements Checkpointab
 
     public abstract void announceBufferSize(int bufferSize);
 
-    public void setupBackupPartition() {
-        try {
-            String pathname = System.getProperty("user.home") + File.separator + "tmp" + File.separator + "inputlog" + File.separator + "gate_" + getGateIndex();
-            Files.createDirectories(Paths.get(pathname));
-            BoundedBlockingResultPartition parent =
-                    (BoundedBlockingResultPartition)
-                            new ResultPartitionBuilder()
-                                    .setResultPartitionType(ResultPartitionType.BLOCKING_PERSISTENT)
-                                    .setBoundedBlockingSubpartitionType(
-                                            BoundedBlockingSubpartitionType.FILE)
-                                    .setResultPartitionIndex(getGateIndex())
-                                    .setFileChannelManager(
-                                            new FileChannelManagerImpl(
-                                                    new String[]{
-                                                            new File(pathname).toString()},
-                                                    "data"))
-                                    .setNetworkBufferSize(32 * 1024)
-                                    .build();
-            backupPartition = parent.getAllPartitions()[0];
-        } catch (IOException e) {
-            System.err.println(e);
-        }
-    }
-
-    protected BufferOrEvent backup(BufferOrEvent bufferOrEvent){
-        if(backupPartition != null){
-            //persist to the storage
-            try {
-                Buffer buffer = bufferOrEvent.getBuffer().retainBuffer();
-                backupPartition.add(new BufferConsumer(buffer, buffer.getSize()));
-                backupPartition.flush();
-            } catch (IOException e) {
-                System.err.println(e);
-            }
-        }
-        return bufferOrEvent;
-    }
 }

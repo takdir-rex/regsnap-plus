@@ -19,15 +19,23 @@
 package org.apache.flink.runtime.io.network.partition;
 
 import org.apache.flink.annotation.VisibleForTesting;
+import org.apache.flink.runtime.event.AbstractEvent;
+import org.apache.flink.runtime.inflightlogging.InFlightLog;
+import org.apache.flink.runtime.inflightlogging.InFlightLogIterator;
+import org.apache.flink.runtime.inflightlogging.InMemorySubpartitionInFlightLogger;
+import org.apache.flink.runtime.io.network.api.CheckpointBarrier;
+import org.apache.flink.runtime.io.network.api.serialization.EventSerializer;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.buffer.BufferConsumerWithPartialRecordLength;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 import static org.apache.flink.util.Preconditions.checkState;
 
@@ -43,9 +51,70 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
     @GuardedBy("buffers")
     private boolean isPartialBufferCleanupRequired = false;
 
+    private final InFlightLog inFlightLog = new InMemorySubpartitionInFlightLogger();
+
+    @GuardedBy("buffers")
+    private InFlightLogIterator<Buffer> inflightReplayIterator;
+
+    private long currentCheckpointId = 0;
+
     PipelinedApproximateSubpartition(
             int index, int receiverExclusiveBuffersPerChannel, ResultPartition parent) {
         super(index, receiverExclusiveBuffersPerChannel, parent);
+    }
+
+    @Nullable
+    @Override
+    BufferAndBacklog pollBuffer() {
+        if (inflightReplayIterator != null) {
+            synchronized (buffers) {
+                return getReplayedBufferUnsafe();
+            }
+        }
+        BufferAndBacklog result = super.pollBuffer();
+        if(result != null) {
+            Buffer buffer = result.buffer();
+//            if (buffer.getDataType().isEvent()) {
+//                CheckpointBarrier barrier;
+//                try {
+//                    final AbstractEvent event =
+//                            EventSerializer.fromBuffer(buffer, getClass().getClassLoader());
+//                    barrier = event instanceof CheckpointBarrier ? (CheckpointBarrier) event : null;
+//                    if(barrier != null){
+//                        if (barrier.getId() > currentCheckpointId) {
+//                            currentCheckpointId = barrier.getId();
+//                            inFlightLog.close();
+//                        }
+//                    }
+//                } catch (IOException e) {
+//                    throw new IllegalStateException(
+//                            "Should always be able to deserialize in-memory event", e);
+//                }
+//            }
+
+            if(Calendar.getInstance().get(Calendar.SECOND) == 45){
+                inFlightLog.close();
+            }
+            if (buffer.isBuffer()) {
+                inFlightLog.log(buffer, currentCheckpointId, false);
+            }
+        }
+        return result;
+    }
+
+    private BufferAndBacklog getReplayedBufferUnsafe() {
+        Buffer buffer = inflightReplayIterator.next();
+        Buffer.DataType nextDataType = isDataAvailableUnsafe() ? getNextBufferTypeUnsafe() : Buffer.DataType.NONE;
+        if (inflightReplayIterator.hasNext()) {
+            nextDataType = inflightReplayIterator.peekNext().getDataType();
+        } else {
+            inflightReplayIterator = null;
+            LOG.debug("Finished replaying inflight log!");
+        }
+        return new BufferAndBacklog(buffer,
+                getBuffersInBacklogUnsafe() + (inflightReplayIterator != null ? inflightReplayIterator.numberRemaining() : 0),
+                nextDataType,
+                sequenceNumber++);
     }
 
     /**
@@ -100,6 +169,16 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             isPartialBufferCleanupRequired = true;
             isBlocked = false;
             sequenceNumber = 0;
+
+            //initiate iterator for inFlightLog
+            if (inflightReplayIterator != null) {
+                inflightReplayIterator.close();
+            }
+            inflightReplayIterator = inFlightLog.getInFlightIterator(currentCheckpointId, 0);
+            if (inflightReplayIterator != null) {
+                if (!inflightReplayIterator.hasNext())
+                    inflightReplayIterator = null;
+            }
         }
     }
 

@@ -259,6 +259,13 @@ public abstract class AsynchronousFileIOChannel<T, R extends IORequest>
         this.requestQueue.add(request);
     }
 
+    final public void clearRequestQueueInternal(){
+
+        this.requestsNotReturned.set(0);
+        this.requestQueue.clear();
+
+    }
+
     /**
      * Registers a listener to be notified when all outstanding requests have been processed.
      *

@@ -432,13 +432,13 @@ public class PipelinedSubpartition extends ResultSubpartition
     }
 
     @GuardedBy("buffers")
-    private boolean isDataAvailableUnsafe() {
+    protected boolean isDataAvailableUnsafe() {
         assert Thread.holdsLock(buffers);
 
         return !isBlocked && (flushRequested || getNumberOfFinishedBuffers() > 0);
     }
 
-    private Buffer.DataType getNextBufferTypeUnsafe() {
+    protected Buffer.DataType getNextBufferTypeUnsafe() {
         assert Thread.holdsLock(buffers);
 
         final BufferConsumerWithPartialRecordLength first = buffers.peek();

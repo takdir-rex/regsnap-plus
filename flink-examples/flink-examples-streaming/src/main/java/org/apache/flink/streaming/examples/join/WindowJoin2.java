@@ -58,8 +58,8 @@ public class WindowJoin2 {
     public static void main(String[] args) throws Exception {
         // parse the parameters
         final ParameterTool params = ParameterTool.fromArgs(args);
-        final long windowSize = params.getLong("windowSize", 2000);
-        final long rate = params.getLong("rate", 3L);
+        final long windowSize = params.getLong("windowSize", 5000);
+        final long rate = params.getLong("rate", 100L);
 
         System.out.println("Using windowSize=" + windowSize + ", data rate=" + rate);
         System.out.println(
