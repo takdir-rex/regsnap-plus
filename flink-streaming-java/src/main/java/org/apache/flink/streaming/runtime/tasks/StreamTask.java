@@ -1159,8 +1159,8 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
             subtaskCheckpointCoordinator.initInputsCheckpoint(
                     checkpointMetaData.getCheckpointId(), checkpointOptions);
 
-            boolean success =
-                    performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics);
+            boolean success = performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics);
+
             if (!success) {
                 declineCheckpoint(checkpointMetaData.getCheckpointId());
             }
@@ -1255,9 +1255,14 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
         FlinkSecurityManager.monitorUserSystemExitForCurrentThread();
         try {
-            if (performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics)) {
-                if (isCurrentSavepointWithoutDrain(checkpointMetaData.getCheckpointId())) {
-                    runSynchronousSavepointMailboxLoop();
+            if(environment.getTaskInfo().isDirectUpstreamOfSnapshotGroup()) {
+                //only send checkpoint barrier without recording own snapshot
+                sendCheckpointBarrier(checkpointMetaData, checkpointOptions);
+            } else {
+                if (performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics)) {
+                    if (isCurrentSavepointWithoutDrain(checkpointMetaData.getCheckpointId())) {
+                        runSynchronousSavepointMailboxLoop();
+                    }
                 }
             }
         } catch (CancelTaskException e) {
@@ -1288,6 +1293,12 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
             throw new FlinkRuntimeException("Stop-with-savepoint --drain failed.");
         }
         subtaskCheckpointCoordinator.abortCheckpointOnBarrier(checkpointId, cause, operatorChain);
+    }
+
+    private boolean sendCheckpointBarrier(CheckpointMetaData checkpointMetaData,
+                                          CheckpointOptions checkpointOptions) throws Exception {
+        subtaskCheckpointCoordinator.sendCheckpointOnBarrier(checkpointMetaData, checkpointOptions, operatorChain);
+        return true;
     }
 
     private boolean performCheckpoint(

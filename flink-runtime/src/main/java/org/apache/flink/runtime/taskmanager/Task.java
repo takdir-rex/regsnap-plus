@@ -345,7 +345,9 @@ public class Task
                         subtaskIndex,
                         taskInformation.getNumberOfSubtasks(),
                         attemptNumber,
-                        String.valueOf(slotAllocationId));
+                        String.valueOf(slotAllocationId),
+                        taskInformation.getJobVertex().isSourceOfSnapshotGroup(),
+                        taskInformation.getJobVertex().isDirectUpstreamOfSnapshotGroup());
 
         this.jobId = jobInformation.getJobId();
         this.vertexId = taskInformation.getJobVertexId();
@@ -425,7 +427,6 @@ public class Task
                 new ThroughputCalculator(
                         SystemClock.getInstance(), tmConfig.get(BUFFER_DEBLOAT_SAMPLES));
         int counter = 0;
-        boolean isSourceOfSnapshotGroup = taskInformation.getJobVertex().isSourceOfSnapshotGroup();
         for (IndexedInputGate gate : gates) {
             inputGates[counter] =
                     new InputGateWithMetrics(

@@ -240,6 +240,17 @@ class SubtaskCheckpointCoordinatorImpl implements SubtaskCheckpointCoordinator {
     }
 
     @Override
+    public void sendCheckpointOnBarrier(CheckpointMetaData metadata,
+                                        CheckpointOptions options,
+                                        OperatorChain<?, ?> operatorChain) throws  Exception {
+
+        operatorChain.prepareSnapshotPreBarrier(metadata.getCheckpointId());
+
+        operatorChain.broadcastEvent(
+                new CheckpointBarrier(metadata.getCheckpointId(), metadata.getTimestamp(), options),
+                options.isUnalignedCheckpoint());
+    }
+    @Override
     public void checkpointState(
             CheckpointMetaData metadata,
             CheckpointOptions options,

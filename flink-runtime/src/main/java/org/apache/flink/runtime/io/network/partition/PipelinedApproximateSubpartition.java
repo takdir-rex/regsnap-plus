@@ -35,7 +35,6 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 import java.io.IOException;
-import java.util.Calendar;
 
 import static org.apache.flink.util.Preconditions.checkState;
 
@@ -56,7 +55,7 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
     @GuardedBy("buffers")
     private InFlightLogIterator<Buffer> inflightReplayIterator;
 
-    private long currentCheckpointId = 0;
+    private long downstreamCheckpointId = 0;
 
     PipelinedApproximateSubpartition(
             int index, int receiverExclusiveBuffersPerChannel, ResultPartition parent) {
@@ -74,29 +73,26 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
         BufferAndBacklog result = super.pollBuffer();
         if(result != null) {
             Buffer buffer = result.buffer();
-//            if (buffer.getDataType().isEvent()) {
-//                CheckpointBarrier barrier;
-//                try {
-//                    final AbstractEvent event =
-//                            EventSerializer.fromBuffer(buffer, getClass().getClassLoader());
-//                    barrier = event instanceof CheckpointBarrier ? (CheckpointBarrier) event : null;
-//                    if(barrier != null){
-//                        if (barrier.getId() > currentCheckpointId) {
-//                            currentCheckpointId = barrier.getId();
-//                            inFlightLog.close();
-//                        }
-//                    }
-//                } catch (IOException e) {
-//                    throw new IllegalStateException(
-//                            "Should always be able to deserialize in-memory event", e);
-//                }
-//            }
-
-            if(Calendar.getInstance().get(Calendar.SECOND) == 45){
-                inFlightLog.close();
+            if(buffer.getDataType() == Buffer.DataType.EVENT_BUFFER){
+                Buffer eventBuffer = buffer.retainBuffer();
+                CheckpointBarrier barrier = null;
+                try {
+                    final AbstractEvent event = EventSerializer.fromBuffer(eventBuffer, getClass().getClassLoader());
+                    barrier = event instanceof CheckpointBarrier ? (CheckpointBarrier) event : null;
+                } catch (IOException e) {
+                    throw new IllegalStateException(
+                            "Should always be able to deserialize in-memory event", e);
+                } finally {
+                    eventBuffer.recycleBuffer();
+                }
+                if(barrier != null){
+                    downstreamCheckpointId = barrier.getId();
+                    inFlightLog.close();
+                }
             }
+
             if (buffer.isBuffer()) {
-                inFlightLog.log(buffer, currentCheckpointId, false);
+                inFlightLog.log(buffer, downstreamCheckpointId, false);
             }
         }
         return result;
@@ -174,7 +170,7 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             if (inflightReplayIterator != null) {
                 inflightReplayIterator.close();
             }
-            inflightReplayIterator = inFlightLog.getInFlightIterator(currentCheckpointId, 0);
+            inflightReplayIterator = inFlightLog.getInFlightIterator(downstreamCheckpointId, 0);
             if (inflightReplayIterator != null) {
                 if (!inflightReplayIterator.hasNext())
                     inflightReplayIterator = null;

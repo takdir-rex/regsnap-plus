@@ -55,6 +55,10 @@ public interface SubtaskCheckpointCoordinator extends Closeable {
             long checkpointId, CheckpointException cause, OperatorChain<?, ?> operatorChain)
             throws IOException;
 
+    void sendCheckpointOnBarrier(CheckpointMetaData metadata,
+                                 CheckpointOptions options,
+                                 OperatorChain<?, ?> operatorChain) throws  Exception;
+
     /** Must be called after {@link #initInputsCheckpoint(long, CheckpointOptions)}. */
     void checkpointState(
             CheckpointMetaData checkpointMetaData,

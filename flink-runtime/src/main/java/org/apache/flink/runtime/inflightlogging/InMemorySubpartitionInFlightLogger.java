@@ -42,9 +42,11 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
 	}
 
 	public synchronized void log(Buffer buffer, long epochID, boolean isFinished) {
-		List<Buffer> epochLog = slicedLog.computeIfAbsent(epochID, k -> new LinkedList<>());
+		List<Buffer> epochLog = slicedLog.computeIfAbsent(epochID, k -> {
+            return new LinkedList<>();
+        });
 		epochLog.add(buffer.retainBuffer());
-		LOG.debug("Logged a new buffer for epoch {}", epochID);
+//		LOG.debug("Logged a new buffer for epoch {}", epochID);
 	}
 
 	@Override
@@ -57,7 +59,7 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
 		for (long epochId : slicedLog.keySet()) {
 			if (epochId < checkpointId) {
 				toRemove.add(epochId);
-				LOG.debug("Removing epoch {}", epochId);
+//				LOG.debug("Removing epoch {}", epochId);
 			}
 		}
 
@@ -122,7 +124,7 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
 			this.currentKey = epochToStartFrom;
 			this.logToReplay = fullLog.tailMap(epochToStartFrom);
             LOG.info(" Getting iterator starting  from checkpointId {}", currentKey);
-			LOG.debug(" Getting iterator starting  from epochID {} with log state {} and sublog state {}", currentKey, representLogAsString(fullLog), representLogAsString(this.logToReplay));
+//			LOG.debug(" Getting iterator starting  from epochID {} with log state {} and sublog state {}", currentKey, representLogAsString(fullLog), representLogAsString(this.logToReplay));
 			if (this.logToReplay.get(currentKey) != null) {
 				this.currentIterator = this.logToReplay.get(currentKey).listIterator();
 				this.numberOfBuffersLeft = this.logToReplay.values().stream().mapToInt(List::size).sum(); //add up the sizes
@@ -130,7 +132,7 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
 				this.currentIterator = null;
 				this.numberOfBuffersLeft = 0;
 			}
-			LOG.debug("State of log: {}\nlog tailmap {}\nIterator creation {}: ", representLogAsString(fullLog), representLogAsString(this.logToReplay), this.toString());
+//			LOG.debug("State of log: {}\nlog tailmap {}\nIterator creation {}: ", representLogAsString(fullLog), representLogAsString(this.logToReplay), this.toString());
 		}
 
 		private void advanceToNextNonEmptyIteratorIfNeeded() {

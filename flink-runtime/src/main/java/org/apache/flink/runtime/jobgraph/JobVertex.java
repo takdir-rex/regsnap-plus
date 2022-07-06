@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
@@ -586,16 +587,55 @@ public class JobVertex implements java.io.Serializable {
         if (isInputVertex()) {
             return true;
         }
-        boolean sourceOfSnapshotGroup = true;
         for (JobEdge jobEdge : getInputs()) {
-            String snapGroup = jobEdge.getSource().getProducer().getSnapshotGroup();
-            if (snapGroup != null) {
-                if (snapGroup.equals(snapshotGroup)) {
-                    sourceOfSnapshotGroup = false;
-                }
+            String upstreamSnapshotGroup = jobEdge.getSource().getProducer().getSnapshotGroup();
+            if (!Objects.equals(upstreamSnapshotGroup, snapshotGroup)) {
+                return true;
             }
         }
-        return sourceOfSnapshotGroup;
+        return false;
+    }
+
+    /**
+     * Return true if this JobVertex is a direct upstream
+     * @return true if this JobVertex is a direct upstream, otherwise return false
+     */
+    public boolean isDirectUpstreamOfSnapshotGroup() {
+        if(isOutputVertex()){
+            return false;
+        }
+        for (IntermediateDataSet output : getProducedDataSets()) {
+            for(JobEdge edge : output.getConsumers()){
+                String targetSnapshotGroup = edge.getTarget().getSnapshotGroup();
+                if (!Objects.equals(targetSnapshotGroup, snapshotGroup)) {
+                    return true;
+                }
+            }
+
+        }
+        return false;
+    }
+
+    /**
+     * Return true if this JobVertex is a direct upstream of the given snapshot group
+     * @param givenSnapshotGroup the given snapshot group
+     * @return True if this JobVertex is a direct upstream of the given snapshot group, otherwise return False.
+     */
+    public boolean isDirectUpstreamOfSnapshotGroup(String givenSnapshotGroup) {
+        if(isOutputVertex()){
+            return false;
+        }
+        for (IntermediateDataSet output : getProducedDataSets()) {
+            for(JobEdge edge : output.getConsumers()){
+                String targetSnapshotGroup = edge.getTarget().getSnapshotGroup();
+                if (Objects.equals(targetSnapshotGroup, givenSnapshotGroup) &&
+                        !Objects.equals(snapshotGroup, givenSnapshotGroup)) {
+                    return true;
+                }
+            }
+
+        }
+        return false;
     }
 
     // --------------------------------------------------------------------------------------------

@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
@@ -219,13 +220,11 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         List<ExecutionVertex> targetedSourceTasks = new ArrayList<>();
 
         for (ExecutionJobVertex jobVertex : jobVerticesInTopologyOrder) {
-            if (jobVertex.getSnapshotGroup() != null) {
-                if (jobVertex.getSnapshotGroup().equals(snapshotGroup)) {
-                    targetedTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-
-                    if (jobVertex.getJobVertex().isSourceOfSnapshotGroup()) {
-                        targetedSourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
-                    }
+            if (Objects.equals(jobVertex.getSnapshotGroup(), snapshotGroup)) {
+                targetedTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
+            } else {
+                if(jobVertex.getJobVertex().isDirectUpstreamOfSnapshotGroup(snapshotGroup)){
+                    targetedSourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
                 }
             }
         }

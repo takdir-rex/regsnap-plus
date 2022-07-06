@@ -74,6 +74,12 @@ public class TestSubtaskCheckpointCoordinator implements SubtaskCheckpointCoordi
     }
 
     @Override
+    public void sendCheckpointOnBarrier(
+            CheckpointMetaData metadata,
+            CheckpointOptions options,
+            OperatorChain<?, ?> operatorChain) throws Exception {}
+
+    @Override
     public void checkpointState(
             CheckpointMetaData checkpointMetaData,
             CheckpointOptions checkpointOptions,

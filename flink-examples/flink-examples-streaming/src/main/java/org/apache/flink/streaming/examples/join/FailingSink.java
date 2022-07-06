@@ -17,10 +17,11 @@ public class FailingSink<T> implements SinkFunction<T> {
 
     @Override
     public void invoke(T value, Context context) throws Exception {
-        if(Calendar.getInstance().get(Calendar.SECOND) < 10 && count < 20){
-            LOG.info(value.toString());
-            count++;
-        }
+//        if(Calendar.getInstance().get(Calendar.SECOND) < 10 && count < 20){
+//            LOG.info(value.toString());
+//            count++;
+//        }
+        LOG.info(value.toString());
         if(Calendar.getInstance().get(Calendar.SECOND) == 0){
             throw new Exception("Simulate failed");
         }
