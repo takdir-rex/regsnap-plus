@@ -120,6 +120,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
@@ -1253,9 +1254,18 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
             CheckpointMetricsBuilder checkpointMetrics)
             throws IOException {
 
+        // (cp.Snap!=null && !isDirectUpstream(cp.snap) && !snapEqual(cp.snap) & !idDownStreamOf(cp.snap))
+        if(!Objects.isNull(checkpointOptions.getSnapshotGroup()) &&
+                !environment.getJobVertex().isDirectUpstreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup()) &&
+                !Objects.equals(environment.getJobVertex().getSnapshotGroup(), checkpointOptions.getSnapshotGroup()) &&
+                !environment.getJobVertex().isDownStreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup())
+        ){
+            return;
+        }
+
         FlinkSecurityManager.monitorUserSystemExitForCurrentThread();
         try {
-            if(environment.getTaskInfo().isDirectUpstreamOfSnapshotGroup()) {
+            if(environment.getJobVertex().isDirectUpstreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup())) {
                 //only send checkpoint barrier without recording own snapshot
                 sendCheckpointBarrier(checkpointMetaData, checkpointOptions);
             } else {

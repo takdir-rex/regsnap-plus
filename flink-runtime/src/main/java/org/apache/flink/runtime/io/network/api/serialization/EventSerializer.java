@@ -213,8 +213,12 @@ public class EventSerializer {
                         ? null
                         : checkpointOptions.getTargetLocation().getReferenceBytes();
 
+        final byte[] snapshotGroupBytes = checkpointOptions.getSnapshotGroup() == null
+                ? null
+                : checkpointOptions.getSnapshotGroup().getBytes();
+
         final ByteBuffer buf =
-                ByteBuffer.allocate(38 + (locationBytes == null ? 0 : locationBytes.length));
+                ByteBuffer.allocate(38 + (locationBytes == null ? 0 : locationBytes.length) + 4 + (snapshotGroupBytes == null ? 0 : snapshotGroupBytes.length)); // 4 bytes integer to store snapshotGroupLen
 
         // we do not use checkpointType.ordinal() here to make the serialization robust
         // against changes in the enum (such as changes in the order of the values)
@@ -244,6 +248,13 @@ public class EventSerializer {
         }
         buf.put((byte) checkpointOptions.getAlignment().ordinal());
         buf.putLong(checkpointOptions.getAlignedCheckpointTimeout());
+
+        if (snapshotGroupBytes == null) {
+            buf.putInt(-1);
+        } else {
+            buf.putInt(snapshotGroupBytes.length);
+            buf.put(snapshotGroupBytes);
+        }
 
         buf.flip();
         return buf;
@@ -282,11 +293,21 @@ public class EventSerializer {
                 CheckpointOptions.AlignmentType.values()[buffer.get()];
         final long alignmentTimeout = buffer.getLong();
 
+        final int snapshotGroupLen = buffer.getInt();
+        final String snapshotGroup;
+        if (snapshotGroupLen == -1) {
+            snapshotGroup = null;
+        } else {
+            byte[] bytes = new byte[snapshotGroupLen];
+            buffer.get(bytes);
+            snapshotGroup = new String(bytes);
+        }
+
         return new CheckpointBarrier(
                 id,
                 timestamp,
                 new CheckpointOptions(
-                        checkpointType, locationRef, alignmentType, alignmentTimeout));
+                        checkpointType, locationRef, alignmentType, alignmentTimeout, snapshotGroup));
     }
 
     // ------------------------------------------------------------------------

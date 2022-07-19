@@ -57,6 +57,7 @@ import org.apache.flink.runtime.io.network.partition.ResultPartitionID;
 import org.apache.flink.runtime.io.network.partition.consumer.IndexedInputGate;
 import org.apache.flink.runtime.io.network.partition.consumer.InputGate;
 import org.apache.flink.runtime.jobgraph.IntermediateDataSetID;
+import org.apache.flink.runtime.jobgraph.JobVertex;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.jobgraph.OperatorID;
 import org.apache.flink.runtime.jobgraph.tasks.CheckpointableTask;
@@ -105,6 +106,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -298,6 +300,8 @@ public class Task
     /** The only one throughput meter per subtask. */
     private ThroughputCalculator throughputCalculator;
 
+    private final JobVertex jobVertex;
+
     /**
      * <b>IMPORTANT:</b> This constructor may not start any work that would need to be undone in the
      * case of a failing task deployment.
@@ -345,10 +349,9 @@ public class Task
                         subtaskIndex,
                         taskInformation.getNumberOfSubtasks(),
                         attemptNumber,
-                        String.valueOf(slotAllocationId),
-                        taskInformation.getJobVertex().isSourceOfSnapshotGroup(),
-                        taskInformation.getJobVertex().isDirectUpstreamOfSnapshotGroup());
+                        String.valueOf(slotAllocationId));
 
+        this.jobVertex = taskInformation.getJobVertex();
         this.jobId = jobInformation.getJobId();
         this.vertexId = taskInformation.getJobVertexId();
         this.executionId = Preconditions.checkNotNull(executionAttemptID);
@@ -703,6 +706,7 @@ public class Task
                     new RuntimeEnvironment(
                             jobId,
                             vertexId,
+                            jobVertex,
                             executionId,
                             executionConfig,
                             taskInfo,

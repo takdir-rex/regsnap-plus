@@ -36,6 +36,7 @@ import org.apache.flink.runtime.io.disk.iomanager.IOManager;
 import org.apache.flink.runtime.io.network.TaskEventDispatcher;
 import org.apache.flink.runtime.io.network.api.writer.ResultPartitionWriter;
 import org.apache.flink.runtime.io.network.partition.consumer.IndexedInputGate;
+import org.apache.flink.runtime.jobgraph.JobVertex;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.jobgraph.tasks.InputSplitProvider;
 import org.apache.flink.runtime.jobgraph.tasks.TaskOperatorEventGateway;
@@ -103,11 +104,14 @@ public class RuntimeEnvironment implements Environment {
 
     private final ThroughputCalculator throughputCalculator;
 
+    private final JobVertex jobVertex;
+
     // ------------------------------------------------------------------------
 
     public RuntimeEnvironment(
             JobID jobId,
             JobVertexID jobVertexId,
+            JobVertex jobVertex,
             ExecutionAttemptID executionId,
             ExecutionConfig executionConfig,
             TaskInfo taskInfo,
@@ -136,6 +140,7 @@ public class RuntimeEnvironment implements Environment {
 
         this.jobId = checkNotNull(jobId);
         this.jobVertexId = checkNotNull(jobVertexId);
+        this.jobVertex = checkNotNull(jobVertex);
         this.executionId = checkNotNull(executionId);
         this.taskInfo = checkNotNull(taskInfo);
         this.executionConfig = checkNotNull(executionConfig);
@@ -178,6 +183,11 @@ public class RuntimeEnvironment implements Environment {
     @Override
     public JobVertexID getJobVertexId() {
         return jobVertexId;
+    }
+
+    @Override
+    public JobVertex getJobVertex() {
+        return this.jobVertex;
     }
 
     @Override

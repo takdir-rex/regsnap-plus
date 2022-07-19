@@ -19,6 +19,7 @@ package org.apache.flink.streaming.examples.join;
 
 import org.apache.flink.api.common.eventtime.*;
 import org.apache.flink.api.common.functions.JoinFunction;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -37,6 +38,7 @@ import org.apache.flink.streaming.examples.join.WindowJoinSampleData.GradeSource
 import org.apache.flink.streaming.examples.join.WindowJoinSampleData.SalarySource;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -111,10 +113,29 @@ public class WindowJoin2 {
                         .name("WM salaries")
                         .snapshotGroup("snapshot-0");
 
+        DataStream<Tuple2<String, Integer>> gradesFordwarder = grades.map(new MapFunction<Tuple2<String, Integer>, Tuple2<String, Integer>>() {
+
+            @Override
+            public Tuple2<String, Integer> map(Tuple2<String, Integer> value) throws Exception {
+                if(Calendar.getInstance().get(Calendar.SECOND) == 0){
+                    throw new Exception("Simulate failed");
+                }
+                return value;
+            }
+        }).snapshotGroup("snapshot-1");
+
+        DataStream<Tuple2<String, Integer>> salariesFordwarder = salaries.map(new MapFunction<Tuple2<String, Integer>, Tuple2<String, Integer>>() {
+
+            @Override
+            public Tuple2<String, Integer> map(Tuple2<String, Integer> value) throws Exception {
+                return value;
+            }
+        }).snapshotGroup("snapshot-1");
+
         // run the actual window join program
         // for testability, this functionality is in a separate method.
         DataStream<Tuple3<String, Integer, Integer>> joinedStream =
-                runWindowJoin(grades, salaries, windowSize);
+                runWindowJoin(gradesFordwarder, salariesFordwarder, windowSize);
 
         ((SingleOutputStreamOperator) joinedStream)
                 .uid("join")
@@ -130,7 +151,7 @@ public class WindowJoin2 {
                 .snapshotGroup("snapshot-2");
 
         // print the results with a single thread, rather than in parallel
-        joinedStream.addSink(new FailingSink<>()).setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snapshot-1");
+        joinedStream.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snapshot-3");
         joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
 
 //                System.out.println(env.getExecutionPlan());

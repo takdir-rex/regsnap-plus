@@ -711,7 +711,8 @@ public class CheckpointCoordinator {
                         checkpoint.getCheckpointStorageLocation().getLocationReference(),
                         isExactlyOnceMode,
                         unalignedCheckpointsEnabled,
-                        alignedCheckpointTimeout);
+                        alignedCheckpointTimeout,
+                        request.snapshotGroup);
 
         // send messages to the tasks to trigger their checkpoints
         List<CompletableFuture<Acknowledge>> acks = new ArrayList<>();

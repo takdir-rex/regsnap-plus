@@ -40,6 +40,7 @@ import org.apache.flink.runtime.io.disk.iomanager.IOManagerAsync;
 import org.apache.flink.runtime.io.network.TaskEventDispatcher;
 import org.apache.flink.runtime.io.network.api.writer.ResultPartitionWriter;
 import org.apache.flink.runtime.io.network.partition.consumer.IndexedInputGate;
+import org.apache.flink.runtime.jobgraph.JobVertex;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.jobgraph.OperatorID;
 import org.apache.flink.runtime.jobgraph.tasks.InputSplitProvider;
@@ -138,6 +139,11 @@ public class SavepointEnvironment implements Environment {
     @Override
     public JobVertexID getJobVertexId() {
         return vertexID;
+    }
+
+    @Override
+    public JobVertex getJobVertex() {
+        return new JobVertex("", getJobVertexId());
     }
 
     @Override

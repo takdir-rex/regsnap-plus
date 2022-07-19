@@ -22,6 +22,8 @@ import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.runtime.jobgraph.tasks.AbstractInvokable;
 import org.apache.flink.runtime.state.CheckpointStorageLocationReference;
 
+import javax.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -60,6 +62,13 @@ public class CheckpointOptions implements Serializable {
     private final AlignmentType alignmentType;
 
     private final long alignedCheckpointTimeout;
+
+    private @Nullable String snapshotGroup = null;
+
+    @Nullable
+    public String getSnapshotGroup() {
+        return snapshotGroup;
+    }
 
     public static CheckpointOptions notExactlyOnce(
             CheckpointType type, CheckpointStorageLocationReference location) {
@@ -119,6 +128,30 @@ public class CheckpointOptions implements Serializable {
         }
     }
 
+    public static CheckpointOptions forConfig(
+            CheckpointType checkpointType,
+            CheckpointStorageLocationReference locationReference,
+            boolean isExactlyOnceMode,
+            boolean isUnalignedEnabled,
+            long alignedCheckpointTimeout,
+            String snapshotGroup) {
+        CheckpointOptions checkpointOptions;
+        if (!isExactlyOnceMode) {
+            checkpointOptions = notExactlyOnce(checkpointType, locationReference);
+        } else if (checkpointType.isSavepoint()) {
+            checkpointOptions = alignedNoTimeout(checkpointType, locationReference);
+        } else if (!isUnalignedEnabled) {
+            checkpointOptions = alignedNoTimeout(checkpointType, locationReference);
+        } else if (alignedCheckpointTimeout == 0
+                || alignedCheckpointTimeout == NO_ALIGNED_CHECKPOINT_TIME_OUT) {
+            checkpointOptions = unaligned(locationReference);
+        } else {
+            checkpointOptions = alignedWithTimeout(locationReference, alignedCheckpointTimeout);
+        }
+        checkpointOptions.snapshotGroup = snapshotGroup;
+        return checkpointOptions;
+    }
+
     @VisibleForTesting
     public CheckpointOptions(
             CheckpointType checkpointType, CheckpointStorageLocationReference targetLocation) {
@@ -130,6 +163,16 @@ public class CheckpointOptions implements Serializable {
             CheckpointStorageLocationReference targetLocation,
             AlignmentType alignmentType,
             long alignedCheckpointTimeout) {
+
+        this(checkpointType, targetLocation, alignmentType, alignedCheckpointTimeout, null);
+    }
+
+    public CheckpointOptions(
+            CheckpointType checkpointType,
+            CheckpointStorageLocationReference targetLocation,
+            AlignmentType alignmentType,
+            long alignedCheckpointTimeout,
+            String snapshotGroup) {
 
         checkArgument(
                 alignmentType != AlignmentType.UNALIGNED || !checkpointType.isSavepoint(),
@@ -143,6 +186,7 @@ public class CheckpointOptions implements Serializable {
         this.targetLocation = checkNotNull(targetLocation);
         this.alignmentType = checkNotNull(alignmentType);
         this.alignedCheckpointTimeout = alignedCheckpointTimeout;
+        this.snapshotGroup = snapshotGroup;
     }
 
     public boolean needsAlignment() {

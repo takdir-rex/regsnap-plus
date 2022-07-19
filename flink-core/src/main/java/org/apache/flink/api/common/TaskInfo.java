@@ -37,10 +37,6 @@ public class TaskInfo {
     private final int numberOfParallelSubtasks;
     private final int attemptNumber;
 
-    private final boolean sourceOfSnapshotGroup;
-
-    private final boolean directUpstreamOfSnapshotGroup;
-
     public TaskInfo(
             String taskName,
             int maxNumberOfParallelSubtasks,
@@ -53,9 +49,7 @@ public class TaskInfo {
                 indexOfSubtask,
                 numberOfParallelSubtasks,
                 attemptNumber,
-                "UNKNOWN",
-                false,
-                false);
+                "UNKNOWN");
     }
 
     public TaskInfo(
@@ -64,9 +58,7 @@ public class TaskInfo {
             int indexOfSubtask,
             int numberOfParallelSubtasks,
             int attemptNumber,
-            String allocationIDAsString,
-            boolean sourceOfSnapshotGroup,
-            boolean directUpstreamOfSnapshotGroup) {
+            String allocationIDAsString) {
 
         checkArgument(indexOfSubtask >= 0, "Task index must be a non-negative number.");
         checkArgument(
@@ -94,8 +86,6 @@ public class TaskInfo {
                         + "#"
                         + attemptNumber;
         this.allocationIDAsString = checkNotNull(allocationIDAsString);
-        this.sourceOfSnapshotGroup = sourceOfSnapshotGroup;
-        this.directUpstreamOfSnapshotGroup = directUpstreamOfSnapshotGroup;
     }
 
     /**
@@ -160,13 +150,5 @@ public class TaskInfo {
      */
     public String getAllocationIDAsString() {
         return allocationIDAsString;
-    }
-
-    public boolean isSourceOfSnapshotGroup() {
-        return sourceOfSnapshotGroup;
-    }
-
-    public boolean isDirectUpstreamOfSnapshotGroup() {
-        return directUpstreamOfSnapshotGroup;
     }
 }

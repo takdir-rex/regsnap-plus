@@ -125,7 +125,7 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
                                     CheckpointFailureReason.NOT_ALL_REQUIRED_TASKS_RUNNING);
                         }
 
-                        checkAllTasksInitiated(snapshotGroup);
+                        checkAllTasksInitiated();
 
                         CheckpointPlan result =
                                 hasFinishedTasks
@@ -151,19 +151,6 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
     private void checkAllTasksInitiated() throws CheckpointException {
         for (ExecutionVertex task : allTasks) {
             if (task.getCurrentExecutionAttempt() == null) {
-                throw new CheckpointException(
-                        String.format(
-                                "task %s of job %s is not being executed at the moment. Aborting checkpoint.",
-                                task.getTaskNameWithSubtaskIndex(), jobId),
-                        CheckpointFailureReason.NOT_ALL_REQUIRED_TASKS_RUNNING);
-            }
-        }
-    }
-
-    private void checkAllTasksInitiated(final String snapshotGroup) throws CheckpointException {
-        for (ExecutionVertex task : allTasks) {
-            if (task.getCurrentExecutionAttempt() == null
-                    && task.getJobVertex().getSnapshotGroup().equals(snapshotGroup)) {
                 throw new CheckpointException(
                         String.format(
                                 "task %s of job %s is not being executed at the moment. Aborting checkpoint.",
@@ -220,7 +207,7 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         List<ExecutionVertex> targetedSourceTasks = new ArrayList<>();
 
         for (ExecutionJobVertex jobVertex : jobVerticesInTopologyOrder) {
-            if (Objects.equals(jobVertex.getSnapshotGroup(), snapshotGroup)) {
+            if (Objects.equals(jobVertex.getSnapshotGroup(), snapshotGroup) || jobVertex.getJobVertex().isDownStreamOfSnapshotGroup(snapshotGroup)) {
                 targetedTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
             } else {
                 if(jobVertex.getJobVertex().isDirectUpstreamOfSnapshotGroup(snapshotGroup)){
@@ -327,47 +314,47 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         List<ExecutionJobVertex> fullyFinishedJobVertex = new ArrayList<>();
 
         for (ExecutionJobVertex jobVertex : jobVerticesInTopologyOrder) {
-            if (jobVertex.getSnapshotGroup() != null) {
-                if (jobVertex.getSnapshotGroup().equals(snapshotGroup)) {
-                    BitSet taskRunningStatus =
-                            taskRunningStatusByVertex.get(jobVertex.getJobVertexId());
+            if (Objects.equals(jobVertex.getSnapshotGroup(), snapshotGroup) || jobVertex
+                    .getJobVertex()
+                    .isDownStreamOfSnapshotGroup(snapshotGroup)) {
+                BitSet taskRunningStatus =
+                        taskRunningStatusByVertex.get(jobVertex.getJobVertexId());
 
-                    if (taskRunningStatus.cardinality() == 0) {
-                        fullyFinishedJobVertex.add(jobVertex);
+                if (taskRunningStatus.cardinality() == 0) {
+                    fullyFinishedJobVertex.add(jobVertex);
 
-                        for (ExecutionVertex task : jobVertex.getTaskVertices()) {
-                            finishedTasks.add(task.getCurrentExecutionAttempt());
-                        }
-
-                        continue;
+                    for (ExecutionVertex task : jobVertex.getTaskVertices()) {
+                        finishedTasks.add(task.getCurrentExecutionAttempt());
                     }
 
-                    List<JobEdge> prevJobEdges = jobVertex.getJobVertex().getInputs();
+                    continue;
+                }
 
-                    // this is an optimization: we determine at the JobVertex level if some tasks
-                    // can even
-                    // be eligible for being in the "triggerTo" set.
-                    boolean someTasksMustBeTriggered =
-                            someTasksMustBeTriggered(taskRunningStatusByVertex, prevJobEdges);
+                List<JobEdge> prevJobEdges = jobVertex.getJobVertex().getInputs();
 
-                    for (int i = 0; i < jobVertex.getTaskVertices().length; ++i) {
-                        ExecutionVertex task = jobVertex.getTaskVertices()[i];
-                        if (taskRunningStatus.get(task.getParallelSubtaskIndex())) {
-                            tasksToWaitFor.add(task.getCurrentExecutionAttempt());
-                            tasksToCommitTo.add(task);
+                // this is an optimization: we determine at the JobVertex level if some tasks
+                // can even
+                // be eligible for being in the "triggerTo" set.
+                boolean someTasksMustBeTriggered =
+                        someTasksMustBeTriggered(taskRunningStatusByVertex, prevJobEdges);
 
-                            if (someTasksMustBeTriggered) {
-                                boolean hasRunningPrecedentTasks =
-                                        hasRunningPrecedentTasks(
-                                                task, prevJobEdges, taskRunningStatusByVertex);
+                for (int i = 0; i < jobVertex.getTaskVertices().length; ++i) {
+                    ExecutionVertex task = jobVertex.getTaskVertices()[i];
+                    if (taskRunningStatus.get(task.getParallelSubtaskIndex())) {
+                        tasksToWaitFor.add(task.getCurrentExecutionAttempt());
+                        tasksToCommitTo.add(task);
 
-                                if (!hasRunningPrecedentTasks) {
-                                    tasksToTrigger.add(task.getCurrentExecutionAttempt());
-                                }
+                        if (someTasksMustBeTriggered) {
+                            boolean hasRunningPrecedentTasks =
+                                    hasRunningPrecedentTasks(
+                                            task, prevJobEdges, taskRunningStatusByVertex);
+
+                            if (!hasRunningPrecedentTasks) {
+                                tasksToTrigger.add(task.getCurrentExecutionAttempt());
                             }
-                        } else {
-                            finishedTasks.add(task.getCurrentExecutionAttempt());
                         }
+                    } else {
+                        finishedTasks.add(task.getCurrentExecutionAttempt());
                     }
                 }
             }

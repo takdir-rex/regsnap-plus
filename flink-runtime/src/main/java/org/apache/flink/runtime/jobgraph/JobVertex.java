@@ -597,26 +597,6 @@ public class JobVertex implements java.io.Serializable {
     }
 
     /**
-     * Return true if this JobVertex is a direct upstream
-     * @return true if this JobVertex is a direct upstream, otherwise return false
-     */
-    public boolean isDirectUpstreamOfSnapshotGroup() {
-        if(isOutputVertex()){
-            return false;
-        }
-        for (IntermediateDataSet output : getProducedDataSets()) {
-            for(JobEdge edge : output.getConsumers()){
-                String targetSnapshotGroup = edge.getTarget().getSnapshotGroup();
-                if (!Objects.equals(targetSnapshotGroup, snapshotGroup)) {
-                    return true;
-                }
-            }
-
-        }
-        return false;
-    }
-
-    /**
      * Return true if this JobVertex is a direct upstream of the given snapshot group
      * @param givenSnapshotGroup the given snapshot group
      * @return True if this JobVertex is a direct upstream of the given snapshot group, otherwise return False.
@@ -634,6 +614,26 @@ public class JobVertex implements java.io.Serializable {
                 }
             }
 
+        }
+        return false;
+    }
+
+    public boolean isDownStreamOfSnapshotGroup(String givenSnapshotGroup) {
+        if(isInputVertex()){
+            return false;
+        }
+        ArrayList<JobVertex> vertices = new ArrayList<>();
+        vertices.add(this);
+        while (!vertices.isEmpty()){
+            for (JobEdge jobEdge : vertices.remove(0).getInputs()) {
+                JobVertex upStream = jobEdge.getSource().getProducer();
+                if(!upStream.isInputVertex()){
+                    vertices.add(upStream);
+                }
+                if (Objects.equals(upStream.getSnapshotGroup(), givenSnapshotGroup)) {
+                    return true;
+                }
+            }
         }
         return false;
     }
