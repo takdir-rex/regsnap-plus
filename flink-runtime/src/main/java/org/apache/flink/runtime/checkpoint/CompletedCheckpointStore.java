@@ -55,6 +55,24 @@ public interface CompletedCheckpointStore {
         return allCheckpoints.get(allCheckpoints.size() - 1);
     }
 
+    default CompletedCheckpoint getLatestCheckpoint(String snapshotGroup) throws Exception {
+        if(snapshotGroup == null){
+            return  getLatestCheckpoint();
+        }
+        List<CompletedCheckpoint> allCheckpoints = getAllCheckpoints();
+        for (int i = allCheckpoints.size()-1; i >= 0 ; i--) {
+            CompletedCheckpoint checkpoint = allCheckpoints.get(i);
+            if(checkpoint.getSnapshotGroup() == null){
+                return checkpoint;
+            }
+            if(checkpoint.getSnapshotGroup().equals(snapshotGroup)){
+                return checkpoint;
+            }
+        }
+
+        return null;
+    }
+
     /** Returns the id of the latest completed checkpoints. */
     default long getLatestCheckpointId() {
         try {
@@ -64,6 +82,18 @@ public interface CompletedCheckpointStore {
             }
 
             return allCheckpoints.get(allCheckpoints.size() - 1).getCheckpointID();
+        } catch (Throwable throwable) {
+            LOG.warn("Get the latest completed checkpoints failed", throwable);
+            return 0;
+        }
+    }
+
+    default long getLatestCheckpointId(String snapshotGroup) {
+        if(snapshotGroup == null){
+            return getLatestCheckpointId();
+        }
+        try {
+            return getLatestCheckpoint(snapshotGroup).getCheckpointID();
         } catch (Throwable throwable) {
             LOG.warn("Get the latest completed checkpoints failed", throwable);
             return 0;

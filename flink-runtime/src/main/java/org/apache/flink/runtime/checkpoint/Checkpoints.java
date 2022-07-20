@@ -213,7 +213,8 @@ public class Checkpoints {
                 operatorStates,
                 checkpointMetadata.getMasterStates(),
                 props,
-                location);
+                location,
+                checkpointMetadata.getSnapshotGroup());
     }
 
     private static void throwNonRestoredStateException(

@@ -576,7 +576,8 @@ public class CheckpointCoordinator {
                                                     request.isPeriodic,
                                                     checkpointInfo.f1.checkpointId,
                                                     checkpointInfo.f1.checkpointStorageLocation,
-                                                    request.getOnCompletionFuture()),
+                                                    request.getOnCompletionFuture(),
+                                                    request.snapshotGroup),
                                     timer);
 
             final CompletableFuture<?> coordinatorCheckpointsComplete =
@@ -764,7 +765,8 @@ public class CheckpointCoordinator {
             boolean isPeriodic,
             long checkpointID,
             CheckpointStorageLocation checkpointStorageLocation,
-            CompletableFuture<CompletedCheckpoint> onCompletionPromise) {
+            CompletableFuture<CompletedCheckpoint> onCompletionPromise,
+            String snapshotGroup) {
 
         synchronized (lock) {
             try {
@@ -786,7 +788,8 @@ public class CheckpointCoordinator {
                         masterHooks.keySet(),
                         props,
                         checkpointStorageLocation,
-                        onCompletionPromise);
+                        onCompletionPromise,
+                        snapshotGroup);
 
         trackPendingCheckpointStats(checkpoint);
 
@@ -1269,7 +1272,8 @@ public class CheckpointCoordinator {
                 sendAbortedMessages(
                         pendingCheckpoint.getCheckpointPlan().getTasksToCommitTo(),
                         checkpointId,
-                        pendingCheckpoint.getCheckpointTimestamp());
+                        pendingCheckpoint.getCheckpointTimestamp(),
+                        pendingCheckpoint.getSnapshotGroup());
                 throw new CheckpointException(
                         "Could not complete the pending checkpoint " + checkpointId + '.',
                         CheckpointFailureReason.FINALIZE_CHECKPOINT_FAILURE,
@@ -1346,9 +1350,9 @@ public class CheckpointCoordinator {
     }
 
     private void sendAbortedMessages(
-            List<ExecutionVertex> tasksToAbort, long checkpointId, long timeStamp) {
+            List<ExecutionVertex> tasksToAbort, long checkpointId, long timeStamp, String snapshotGroup) {
         assert (Thread.holdsLock(lock));
-        long latestCompletedCheckpointId = completedCheckpointStore.getLatestCheckpointId();
+        long latestCompletedCheckpointId = completedCheckpointStore.getLatestCheckpointId(snapshotGroup);
 
         // send notification of aborted checkpoints asynchronously.
         executor.execute(
@@ -1538,8 +1542,13 @@ public class CheckpointCoordinator {
                     job,
                     sharedStateRegistry);
 
+            String snapshotGroup = null;
+            if(!tasks.isEmpty()){
+                snapshotGroup = tasks.iterator().next().getJobVertex().getSnapshotGroup();
+            }
+
             // Restore from the latest checkpoint
-            CompletedCheckpoint latest = completedCheckpointStore.getLatestCheckpoint();
+            CompletedCheckpoint latest = completedCheckpointStore.getLatestCheckpoint(snapshotGroup);
 
             if (latest == null) {
                 LOG.info("No checkpoint found during restore.");
@@ -1972,7 +1981,8 @@ public class CheckpointCoordinator {
                 sendAbortedMessages(
                         pendingCheckpoint.getCheckpointPlan().getTasksToCommitTo(),
                         pendingCheckpoint.getCheckpointId(),
-                        pendingCheckpoint.getCheckpointTimestamp());
+                        pendingCheckpoint.getCheckpointTimestamp(),
+                        pendingCheckpoint.getSnapshotGroup());
                 pendingCheckpoints.remove(pendingCheckpoint.getCheckpointId());
                 rememberRecentCheckpointId(pendingCheckpoint.getCheckpointId());
                 scheduleTriggerRequest();

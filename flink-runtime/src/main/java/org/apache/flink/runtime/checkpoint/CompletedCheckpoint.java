@@ -107,6 +107,8 @@ public class CompletedCheckpoint implements Serializable, Checkpoint {
     /** Optional stats tracker callback for discard. */
     @Nullable private transient volatile CompletedCheckpointStats.DiscardCallback discardCallback;
 
+    private final String snapshotGroup;
+
     // ------------------------------------------------------------------------
 
     public CompletedCheckpoint(
@@ -117,7 +119,8 @@ public class CompletedCheckpoint implements Serializable, Checkpoint {
             Map<OperatorID, OperatorState> operatorStates,
             @Nullable Collection<MasterState> masterHookStates,
             CheckpointProperties props,
-            CompletedCheckpointStorageLocation storageLocation) {
+            CompletedCheckpointStorageLocation storageLocation,
+            String snapshotGroup) {
 
         checkArgument(checkpointID >= 0);
         checkArgument(timestamp >= 0);
@@ -140,6 +143,7 @@ public class CompletedCheckpoint implements Serializable, Checkpoint {
         this.storageLocation = checkNotNull(storageLocation);
         this.metadataHandle = storageLocation.getMetadataHandle();
         this.externalPointer = storageLocation.getExternalPointer();
+        this.snapshotGroup = snapshotGroup;
     }
 
     // ------------------------------------------------------------------------
@@ -331,5 +335,14 @@ public class CompletedCheckpoint implements Serializable, Checkpoint {
         return String.format(
                 "%s %d @ %d for %s located at %s",
                 props.getCheckpointType().getName(), checkpointID, timestamp, job, externalPointer);
+    }
+
+    /**
+     * Get snapshot group of this checkpoint
+     *
+     * @return
+     */
+    public String getSnapshotGroup(){
+        return snapshotGroup;
     }
 }

@@ -128,6 +128,16 @@ public abstract class MetadataV2V3SerializerBase {
         for (OperatorState operatorState : operatorStates) {
             serializeOperatorState(operatorState, dos);
         }
+
+        // forth: snapshot group
+        String snapshotGroup = checkpointMetadata.getSnapshotGroup();
+        if(snapshotGroup == null){
+            dos.writeInt(-1);
+        } else {
+            final byte[] snapshotGroupBytes = snapshotGroup.getBytes();
+            dos.writeInt(snapshotGroupBytes.length);
+            dos.write(snapshotGroupBytes);
+        }
     }
 
     protected CheckpointMetadata deserializeMetadata(
@@ -165,7 +175,16 @@ public abstract class MetadataV2V3SerializerBase {
             operatorStates.add(deserializeOperatorState(dis, context));
         }
 
-        return new CheckpointMetadata(checkpointId, operatorStates, masterStates);
+        // forth: snapshot group
+        String snapshotGroup = null;
+        int snapshotGroupLen = dis.readInt();
+        if(snapshotGroupLen >= 0){
+            byte[] bytes = new byte[snapshotGroupLen];
+            dis.readFully(bytes);
+            snapshotGroup = new String(bytes);
+        }
+
+        return new CheckpointMetadata(checkpointId, operatorStates, masterStates, snapshotGroup);
     }
 
     // ------------------------------------------------------------------------

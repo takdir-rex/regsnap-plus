@@ -66,6 +66,10 @@ import static org.apache.flink.util.Preconditions.checkState;
  */
 public class PendingCheckpoint implements Checkpoint {
 
+    public String getSnapshotGroup() {
+        return snapshotGroup;
+    }
+
     /** Result of the {@link PendingCheckpoint#acknowledgedTasks} method. */
     public enum TaskAcknowledgeResult {
         SUCCESS, // successful acknowledge of the task
@@ -121,6 +125,8 @@ public class PendingCheckpoint implements Checkpoint {
 
     private CheckpointException failureCause;
 
+    private final String snapshotGroup;
+
     // --------------------------------------------------------------------------------------------
 
     public PendingCheckpoint(
@@ -132,7 +138,8 @@ public class PendingCheckpoint implements Checkpoint {
             Collection<String> masterStateIdentifiers,
             CheckpointProperties props,
             CheckpointStorageLocation targetLocation,
-            CompletableFuture<CompletedCheckpoint> onCompletionPromise) {
+            CompletableFuture<CompletedCheckpoint> onCompletionPromise,
+            String snapshotGroup) {
 
         checkArgument(
                 checkpointPlan.getTasksToWaitFor().size() > 0,
@@ -163,6 +170,7 @@ public class PendingCheckpoint implements Checkpoint {
                         : new HashSet<>(operatorCoordinatorsToConfirm);
         this.acknowledgedTasks = new HashSet<>(checkpointPlan.getTasksToWaitFor().size());
         this.onCompletionPromise = checkNotNull(onCompletionPromise);
+        this.snapshotGroup = snapshotGroup;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -316,7 +324,8 @@ public class PendingCheckpoint implements Checkpoint {
 
                 // write out the metadata
                 final CheckpointMetadata savepoint =
-                        new CheckpointMetadata(checkpointId, operatorStates.values(), masterStates);
+                        new CheckpointMetadata(checkpointId, operatorStates.values(), masterStates,
+                                getSnapshotGroup());
                 final CompletedCheckpointStorageLocation finalizedLocation;
 
                 try (CheckpointMetadataOutputStream out =
@@ -334,7 +343,8 @@ public class PendingCheckpoint implements Checkpoint {
                                 operatorStates,
                                 masterStates,
                                 props,
-                                finalizedLocation);
+                                finalizedLocation,
+                                getSnapshotGroup());
 
                 onCompletionPromise.complete(completed);
 

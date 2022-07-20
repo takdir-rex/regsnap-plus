@@ -144,7 +144,7 @@ public class CheckpointingOptions {
     @Documentation.Section(Documentation.Sections.COMMON_STATE_BACKENDS)
     public static final ConfigOption<Integer> MAX_RETAINED_CHECKPOINTS =
             ConfigOptions.key("state.checkpoints.num-retained")
-                    .defaultValue(1)
+                    .defaultValue(10)
                     .withDescription("The maximum number of completed checkpoints to retain.");
 
     /** @deprecated Checkpoints are aways asynchronous. */
