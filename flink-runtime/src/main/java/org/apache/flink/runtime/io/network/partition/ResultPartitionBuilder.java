@@ -118,7 +118,7 @@ public class ResultPartitionBuilder {
     public ResultPartitionBuilder setupBufferPoolFactoryFromNettyShuffleEnvironment(
             NettyShuffleEnvironment environment) {
         return setNetworkBuffersPerChannel(
-                environment.getConfiguration().networkBuffersPerChannel())
+                        environment.getConfiguration().networkBuffersPerChannel())
                 .setFloatingNetworkBuffersPerGate(
                         environment.getConfiguration().floatingNetworkBuffersPerGate())
                 .setNetworkBufferSize(environment.getConfiguration().networkBufferSize())
@@ -192,7 +192,7 @@ public class ResultPartitionBuilder {
 
     public ResultPartitionBuilder setBoundedBlockingSubpartitionType(
             @SuppressWarnings("SameParameterValue")
-            BoundedBlockingSubpartitionType blockingSubpartitionType) {
+                    BoundedBlockingSubpartitionType blockingSubpartitionType) {
         this.blockingSubpartitionType = blockingSubpartitionType;
         return this;
     }

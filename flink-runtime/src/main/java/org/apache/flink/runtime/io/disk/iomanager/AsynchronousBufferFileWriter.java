@@ -34,7 +34,11 @@ public class AsynchronousBufferFileWriter extends AsynchronousFileIOChannel<Buff
         this(channelID, requestQueue, CALLBACK);
     }
 
-    protected AsynchronousBufferFileWriter(ID channelID, RequestQueue<WriteRequest> requestQueue, RequestDoneCallback<Buffer> callback) throws IOException {
+    protected AsynchronousBufferFileWriter(
+            ID channelID,
+            RequestQueue<WriteRequest> requestQueue,
+            RequestDoneCallback<Buffer> callback)
+            throws IOException {
         super(channelID, requestQueue, callback, true);
     }
 
@@ -62,7 +66,7 @@ public class AsynchronousBufferFileWriter extends AsynchronousFileIOChannel<Buff
     }
 
     @Override
-    public final void clearRequestQueue(){
+    public final void clearRequestQueue() {
         this.clearRequestQueueInternal();
     }
 

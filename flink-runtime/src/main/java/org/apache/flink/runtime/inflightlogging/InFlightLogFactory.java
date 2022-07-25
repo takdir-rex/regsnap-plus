@@ -25,7 +25,6 @@
 
 package org.apache.flink.runtime.inflightlogging;
 
-
 public interface InFlightLogFactory {
     InFlightLog build();
 

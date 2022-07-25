@@ -1160,7 +1160,8 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
             subtaskCheckpointCoordinator.initInputsCheckpoint(
                     checkpointMetaData.getCheckpointId(), checkpointOptions);
 
-            boolean success = performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics);
+            boolean success =
+                    performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics);
 
             if (!success) {
                 declineCheckpoint(checkpointMetaData.getCheckpointId());
@@ -1254,19 +1255,27 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
             CheckpointMetricsBuilder checkpointMetrics)
             throws IOException {
 
-        // (cp.Snap!=null && !isDirectUpstream(cp.snap) && !snapEqual(cp.snap) & !idDownStreamOf(cp.snap))
-        if(!Objects.isNull(checkpointOptions.getSnapshotGroup()) &&
-                !environment.getJobVertex().isDirectUpstreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup()) &&
-                !Objects.equals(environment.getJobVertex().getSnapshotGroup(), checkpointOptions.getSnapshotGroup()) &&
-                !environment.getJobVertex().isDownStreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup())
-        ){
+        // (cp.Snap!=null && !isDirectUpstream(cp.snap) && !snapEqual(cp.snap) &
+        // !idDownStreamOf(cp.snap))
+        if (!Objects.isNull(checkpointOptions.getSnapshotGroup())
+                && !environment
+                        .getJobVertex()
+                        .isDirectUpstreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup())
+                && !Objects.equals(
+                        environment.getJobVertex().getSnapshotGroup(),
+                        checkpointOptions.getSnapshotGroup())
+                && !environment
+                        .getJobVertex()
+                        .isDownStreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup())) {
             return;
         }
 
         FlinkSecurityManager.monitorUserSystemExitForCurrentThread();
         try {
-            if(environment.getJobVertex().isDirectUpstreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup())) {
-                //only send checkpoint barrier without recording own snapshot
+            if (environment
+                    .getJobVertex()
+                    .isDirectUpstreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup())) {
+                // only send checkpoint barrier without recording own snapshot
                 sendCheckpointBarrier(checkpointMetaData, checkpointOptions);
             } else {
                 if (performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics)) {
@@ -1305,9 +1314,11 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
         subtaskCheckpointCoordinator.abortCheckpointOnBarrier(checkpointId, cause, operatorChain);
     }
 
-    private boolean sendCheckpointBarrier(CheckpointMetaData checkpointMetaData,
-                                          CheckpointOptions checkpointOptions) throws Exception {
-        subtaskCheckpointCoordinator.sendCheckpointOnBarrier(checkpointMetaData, checkpointOptions, operatorChain);
+    private boolean sendCheckpointBarrier(
+            CheckpointMetaData checkpointMetaData, CheckpointOptions checkpointOptions)
+            throws Exception {
+        subtaskCheckpointCoordinator.sendCheckpointOnBarrier(
+                checkpointMetaData, checkpointOptions, operatorChain);
         return true;
     }
 

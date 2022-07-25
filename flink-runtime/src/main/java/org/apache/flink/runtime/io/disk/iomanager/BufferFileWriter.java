@@ -28,9 +28,7 @@ public interface BufferFileWriter extends BlockChannelWriterWithCallback<Buffer>
     /** Returns the number of outstanding requests. */
     int getNumberOfOutstandingRequests();
 
-    /**
-     * Clears any outstanding requests
-     */
+    /** Clears any outstanding requests */
     void clearRequestQueue();
 
     /**

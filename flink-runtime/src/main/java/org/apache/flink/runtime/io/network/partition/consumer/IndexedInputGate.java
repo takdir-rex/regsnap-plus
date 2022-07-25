@@ -19,20 +19,9 @@ package org.apache.flink.runtime.io.network.partition.consumer;
 
 import org.apache.flink.runtime.checkpoint.CheckpointException;
 import org.apache.flink.runtime.checkpoint.channel.InputChannelInfo;
-import org.apache.flink.runtime.io.disk.FileChannelManagerImpl;
 import org.apache.flink.runtime.io.network.api.CheckpointBarrier;
-import org.apache.flink.runtime.io.network.buffer.Buffer;
-import org.apache.flink.runtime.io.network.buffer.BufferConsumer;
-import org.apache.flink.runtime.io.network.partition.BoundedBlockingResultPartition;
-import org.apache.flink.runtime.io.network.partition.BoundedBlockingSubpartitionType;
-import org.apache.flink.runtime.io.network.partition.ResultPartitionBuilder;
-import org.apache.flink.runtime.io.network.partition.ResultPartitionType;
-import org.apache.flink.runtime.io.network.partition.ResultSubpartition;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 /** An {@link InputGate} with a specific index. */
@@ -80,5 +69,4 @@ public abstract class IndexedInputGate extends InputGate implements Checkpointab
     public abstract int getBuffersInUseCount();
 
     public abstract void announceBufferSize(int bufferSize);
-
 }

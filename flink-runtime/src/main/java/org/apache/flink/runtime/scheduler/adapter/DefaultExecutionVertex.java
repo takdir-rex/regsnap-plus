@@ -54,7 +54,8 @@ class DefaultExecutionVertex implements SchedulingExecutionVertex {
             Supplier<ExecutionState> stateSupplier,
             List<ConsumedPartitionGroup> consumedPartitionGroups,
             Function<IntermediateResultPartitionID, DefaultResultPartition>
-                    resultPartitionRetriever, String snapshotGroup) {
+                    resultPartitionRetriever,
+            String snapshotGroup) {
         this.executionVertexId = checkNotNull(executionVertexId);
         this.stateSupplier = checkNotNull(stateSupplier);
         this.producedResults = checkNotNull(producedPartitions);

@@ -239,10 +239,12 @@ public class IOManagerAsync extends IOManager implements UncaughtExceptionHandle
     }
 
     @Override
-    public BufferFileWriter createBufferFileWriter(FileIOChannel.ID channelID, RequestDoneCallback<Buffer> callback) throws IOException {
+    public BufferFileWriter createBufferFileWriter(
+            FileIOChannel.ID channelID, RequestDoneCallback<Buffer> callback) throws IOException {
         checkState(!isShutdown.get(), "I/O-Manger is shut down.");
 
-        return new AsynchronousBufferFileWriter(channelID, writers[channelID.getThreadNum()].requestQueue, callback);
+        return new AsynchronousBufferFileWriter(
+                channelID, writers[channelID.getThreadNum()].requestQueue, callback);
     }
 
     @Override

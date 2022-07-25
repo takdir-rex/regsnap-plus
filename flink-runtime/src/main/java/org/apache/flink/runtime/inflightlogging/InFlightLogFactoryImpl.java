@@ -32,44 +32,48 @@ import org.apache.flink.runtime.io.network.buffer.NetworkBufferPool;
 import java.io.IOException;
 
 public class InFlightLogFactoryImpl implements InFlightLogFactory {
-	private final IOManager ioManager;
-	private final InFlightLogConfig config;
-	private final NetworkBufferPool networkBufferPool;
+    private final IOManager ioManager;
+    private final InFlightLogConfig config;
+    private final NetworkBufferPool networkBufferPool;
 
-	public InFlightLogFactoryImpl(InFlightLogConfig config, IOManager ioManager, NetworkBufferPool networkBufferPool) {
-		this.config = config;
-		this.ioManager = ioManager;
-		this.networkBufferPool = networkBufferPool;
-	}
+    public InFlightLogFactoryImpl(
+            InFlightLogConfig config, IOManager ioManager, NetworkBufferPool networkBufferPool) {
+        this.config = config;
+        this.ioManager = ioManager;
+        this.networkBufferPool = networkBufferPool;
+    }
 
-	@Override
-	public InFlightLog build() {
-		switch (config.getType()) {
-			case DISABLED:
-				return new NoOpInFlightLog();
-			case SPILLABLE:
-				BufferPool prefetchBufferPool = null;
-				try {
-					prefetchBufferPool = networkBufferPool.createBufferPool(config.getPreFetchBufferPoolSize(),
-						config.getPreFetchBufferPoolSize());
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
+    @Override
+    public InFlightLog build() {
+        switch (config.getType()) {
+            case DISABLED:
+                return new NoOpInFlightLog();
+            case SPILLABLE:
+                BufferPool prefetchBufferPool = null;
+                try {
+                    prefetchBufferPool =
+                            networkBufferPool.createBufferPool(
+                                    config.getPreFetchBufferPoolSize(),
+                                    config.getPreFetchBufferPoolSize());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
-				if(config.getSpillPolicy() == InFlightLogConfig.Policy.EAGER)
-					return new SpillableSubpartitionInFlightLogger(ioManager, prefetchBufferPool, true);
-				else
-					return new SpillableSubpartitionInFlightLogger(ioManager, prefetchBufferPool, false);
+                if (config.getSpillPolicy() == InFlightLogConfig.Policy.EAGER)
+                    return new SpillableSubpartitionInFlightLogger(
+                            ioManager, prefetchBufferPool, true);
+                else
+                    return new SpillableSubpartitionInFlightLogger(
+                            ioManager, prefetchBufferPool, false);
 
-			case IN_MEMORY:
-			default:
-				return new InMemorySubpartitionInFlightLogger();
-		}
-	}
+            case IN_MEMORY:
+            default:
+                return new InMemorySubpartitionInFlightLogger();
+        }
+    }
 
-	@Override
-	public InFlightLogConfig getInFlightLogConfig() {
-		return config;
-	}
-
+    @Override
+    public InFlightLogConfig getInFlightLogConfig() {
+        return config;
+    }
 }

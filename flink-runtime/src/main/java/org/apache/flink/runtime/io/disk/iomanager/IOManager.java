@@ -203,7 +203,8 @@ public abstract class IOManager implements AutoCloseable {
 
     public abstract BufferFileWriter createBufferFileWriter(ID channelID) throws IOException;
 
-    public abstract BufferFileWriter createBufferFileWriter(FileIOChannel.ID channelID, RequestDoneCallback<Buffer> callback) throws IOException;
+    public abstract BufferFileWriter createBufferFileWriter(
+            FileIOChannel.ID channelID, RequestDoneCallback<Buffer> callback) throws IOException;
 
     public abstract BufferFileReader createBufferFileReader(
             ID channelID, RequestDoneCallback<Buffer> callback) throws IOException;

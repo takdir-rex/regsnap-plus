@@ -95,6 +95,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
@@ -303,6 +304,7 @@ public class StreamGraphGenerator {
 
     public StreamGraph generate() {
         streamGraph = new StreamGraph(executionConfig, checkpointConfig, savepointRestoreSettings);
+        streamGraph.setAllVerticesInSameSlotSharingGroupByDefault(false);
         streamGraph.setEnableCheckpointsAfterTasksFinish(
                 configuration.get(
                         ExecutionCheckpointingOptions.ENABLE_CHECKPOINTS_AFTER_TASKS_FINISH));
@@ -320,6 +322,7 @@ public class StreamGraphGenerator {
         setFineGrainedGlobalStreamExchangeMode(streamGraph);
 
         for (StreamNode node : streamGraph.getStreamNodes()) {
+            node.setSlotSharingGroup(UUID.randomUUID().toString());
             if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
                 for (StreamEdge edge : node.getInEdges()) {
                     edge.setSupportsUnalignedCheckpoints(false);

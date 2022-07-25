@@ -29,38 +29,28 @@ import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.buffer.BufferPool;
 
 public class NoOpInFlightLog implements InFlightLog {
-	@Override
-	public void registerBufferPool(BufferPool bufferPool) {
+    @Override
+    public void registerBufferPool(BufferPool bufferPool) {}
 
-	}
+    @Override
+    public void log(Buffer buffer, long epochID, boolean isFinished) {}
 
-	@Override
-	public void log(Buffer buffer, long epochID, boolean isFinished) {
+    @Override
+    public InFlightLogIterator<Buffer> getInFlightIterator(long epochID, int ignoreBuffers) {
+        return null;
+    }
 
-	}
+    @Override
+    public void destroyBufferPools() {}
 
-	@Override
-	public InFlightLogIterator<Buffer> getInFlightIterator(long epochID, int ignoreBuffers) {
-		return null;
-	}
+    @Override
+    public void close() {}
 
-	@Override
-	public void destroyBufferPools() {
+    @Override
+    public BufferPool getInFlightBufferPool() {
+        return null;
+    }
 
-	}
-
-	@Override
-	public void close() {
-
-	}
-
-	@Override
-	public BufferPool getInFlightBufferPool() {
-		return null;
-	}
-
-	@Override
-	public void notifyCheckpointComplete(long checkpointId) throws Exception {
-
-	}
+    @Override
+    public void notifyCheckpointComplete(long checkpointId) throws Exception {}
 }

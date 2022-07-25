@@ -1295,8 +1295,8 @@ public class CheckpointCoordinator {
 
         LOG.info(
                 "Completed checkpoint {} for job {} ({} bytes, checkpointDuration={} ms, finalizationTime={} ms).",
-//                checkpointId,
-                completedCheckpoint.getExternalPointer().substring(36,46),
+                //                checkpointId,
+                completedCheckpoint.getExternalPointer().substring(36, 46),
                 job,
                 completedCheckpoint.getStateSize(),
                 completedCheckpoint.getCompletionTimestamp() - completedCheckpoint.getTimestamp(),
@@ -1350,9 +1350,13 @@ public class CheckpointCoordinator {
     }
 
     private void sendAbortedMessages(
-            List<ExecutionVertex> tasksToAbort, long checkpointId, long timeStamp, String snapshotGroup) {
+            List<ExecutionVertex> tasksToAbort,
+            long checkpointId,
+            long timeStamp,
+            String snapshotGroup) {
         assert (Thread.holdsLock(lock));
-        long latestCompletedCheckpointId = completedCheckpointStore.getLatestCheckpointId(snapshotGroup);
+        long latestCompletedCheckpointId =
+                completedCheckpointStore.getLatestCheckpointId(snapshotGroup);
 
         // send notification of aborted checkpoints asynchronously.
         executor.execute(
@@ -1543,12 +1547,13 @@ public class CheckpointCoordinator {
                     sharedStateRegistry);
 
             String snapshotGroup = null;
-            if(!tasks.isEmpty()){
+            if (!tasks.isEmpty()) {
                 snapshotGroup = tasks.iterator().next().getJobVertex().getSnapshotGroup();
             }
 
             // Restore from the latest checkpoint
-            CompletedCheckpoint latest = completedCheckpointStore.getLatestCheckpoint(snapshotGroup);
+            CompletedCheckpoint latest =
+                    completedCheckpointStore.getLatestCheckpoint(snapshotGroup);
 
             if (latest == null) {
                 LOG.info("No checkpoint found during restore.");

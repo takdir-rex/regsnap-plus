@@ -54,7 +54,8 @@ public class MergeOperatorStates implements GroupReduceFunction<OperatorState, C
                         SnapshotUtils.CHECKPOINT_ID,
                         StreamSupport.stream(values.spliterator(), false)
                                 .collect(Collectors.toList()),
-                        masterStates, null);
+                        masterStates,
+                        null);
 
         out.collect(metadata);
     }

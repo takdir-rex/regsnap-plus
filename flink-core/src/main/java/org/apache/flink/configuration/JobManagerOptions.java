@@ -282,8 +282,8 @@ public class JobManagerOptions {
                                                     link(
                                                             "{{.Site.BaseURL}}{{.Site.LanguagePrefix}}/docs/ops/state/task_failure_recovery/#restart-pipelined-region-failover-strategy",
                                                             "here")),
-                                            text("'snapshot-group': Restarts all tasks having similar snapshot group with the failed task.")
-                                    )
+                                            text(
+                                                    "'snapshot-group': Restarts all tasks having similar snapshot group with the failed task."))
                                     .build());
 
     /** The location where the JobManager stores the archives of completed jobs. */

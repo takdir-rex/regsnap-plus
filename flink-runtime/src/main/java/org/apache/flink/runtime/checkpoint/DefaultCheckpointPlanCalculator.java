@@ -207,10 +207,11 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         List<ExecutionVertex> targetedSourceTasks = new ArrayList<>();
 
         for (ExecutionJobVertex jobVertex : jobVerticesInTopologyOrder) {
-            if (Objects.equals(jobVertex.getSnapshotGroup(), snapshotGroup) || jobVertex.getJobVertex().isDownStreamOfSnapshotGroup(snapshotGroup)) {
+            if (Objects.equals(jobVertex.getSnapshotGroup(), snapshotGroup)
+                    || jobVertex.getJobVertex().isDownStreamOfSnapshotGroup(snapshotGroup)) {
                 targetedTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
             } else {
-                if(jobVertex.getJobVertex().isDirectUpstreamOfSnapshotGroup(snapshotGroup)){
+                if (jobVertex.getJobVertex().isDirectUpstreamOfSnapshotGroup(snapshotGroup)) {
                     targetedSourceTasks.addAll(Arrays.asList(jobVertex.getTaskVertices()));
                 }
             }
@@ -314,9 +315,8 @@ public class DefaultCheckpointPlanCalculator implements CheckpointPlanCalculator
         List<ExecutionJobVertex> fullyFinishedJobVertex = new ArrayList<>();
 
         for (ExecutionJobVertex jobVertex : jobVerticesInTopologyOrder) {
-            if (Objects.equals(jobVertex.getSnapshotGroup(), snapshotGroup) || jobVertex
-                    .getJobVertex()
-                    .isDownStreamOfSnapshotGroup(snapshotGroup)) {
+            if (Objects.equals(jobVertex.getSnapshotGroup(), snapshotGroup)
+                    || jobVertex.getJobVertex().isDownStreamOfSnapshotGroup(snapshotGroup)) {
                 BitSet taskRunningStatus =
                         taskRunningStatusByVertex.get(jobVertex.getJobVertexId());
 

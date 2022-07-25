@@ -25,15 +25,14 @@
 
 package org.apache.flink.runtime.inflightlogging;
 
+public class InMemoryInFlightLogFactory implements InFlightLogFactory {
+    @Override
+    public InFlightLog build() {
+        return new InMemorySubpartitionInFlightLogger();
+    }
 
-public class InMemoryInFlightLogFactory implements InFlightLogFactory{
-	@Override
-	public InFlightLog build() {
-		return new InMemorySubpartitionInFlightLogger();
-	}
-
-	@Override
-	public InFlightLogConfig getInFlightLogConfig() {
-		return null;
-	}
+    @Override
+    public InFlightLogConfig getInFlightLogConfig() {
+        return null;
+    }
 }

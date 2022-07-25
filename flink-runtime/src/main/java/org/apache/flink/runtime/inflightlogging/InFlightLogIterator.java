@@ -21,63 +21,56 @@ import java.util.ListIterator;
 
 public abstract class InFlightLogIterator<T> implements ListIterator<T> {
 
-	/**
-	 *
-	 * @return the number of buffers still to be replayed
-	 */
-	public abstract int numberRemaining();
+    /** @return the number of buffers still to be replayed */
+    public abstract int numberRemaining();
 
-	/**
-	 *
-	 * @return the epoch currently being replayed
-	 */
-	public abstract long getEpoch();
+    /** @return the epoch currently being replayed */
+    public abstract long getEpoch();
 
-	/**
-	 * Returns , but does not remove, the next buffer to be replayed.
-	 * Its reference count is not increased by this.
-	 */
-	public abstract T peekNext();
+    /**
+     * Returns , but does not remove, the next buffer to be replayed. Its reference count is not
+     * increased by this.
+     */
+    public abstract T peekNext();
 
-	/**
-	 * Used to close iterator before it is done replaying or after it is done.
-	 * Must decrement reference counts of remaining buffers
-	 */
-	public abstract void close();
+    /**
+     * Used to close iterator before it is done replaying or after it is done. Must decrement
+     * reference counts of remaining buffers
+     */
+    public abstract void close();
 
-	@Override
-	public T previous() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public T previous() {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public boolean hasPrevious() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public boolean hasPrevious() {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public int nextIndex() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public int nextIndex() {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public int previousIndex() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public int previousIndex() {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public void set(T buffer) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void set(T buffer) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public void add(T buffer) {
-		throw new UnsupportedOperationException();
-	}
-
+    @Override
+    public void add(T buffer) {
+        throw new UnsupportedOperationException();
+    }
 }

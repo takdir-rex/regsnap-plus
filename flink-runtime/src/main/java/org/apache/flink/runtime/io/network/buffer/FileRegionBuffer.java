@@ -179,9 +179,7 @@ public class FileRegionBuffer extends DefaultFileRegion implements Buffer {
     }
 
     @Override
-    public void setRecycler(BufferRecycler recycler) {
-
-    }
+    public void setRecycler(BufferRecycler recycler) {}
 
     @Override
     public void recycleBuffer() {

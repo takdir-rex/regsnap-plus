@@ -259,11 +259,10 @@ public abstract class AsynchronousFileIOChannel<T, R extends IORequest>
         this.requestQueue.add(request);
     }
 
-    final public void clearRequestQueueInternal(){
+    public final void clearRequestQueueInternal() {
 
         this.requestsNotReturned.set(0);
         this.requestQueue.clear();
-
     }
 
     /**

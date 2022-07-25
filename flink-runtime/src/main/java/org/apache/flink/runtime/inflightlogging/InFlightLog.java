@@ -17,39 +17,35 @@
  */
 package org.apache.flink.runtime.inflightlogging;
 
+import org.apache.flink.api.common.state.CheckpointListener;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.buffer.BufferPool;
-import org.apache.flink.api.common.state.CheckpointListener;
 
 /**
- * An InFlightLog records {@link Buffer} instances which have been sent to other tasks.
- * The processing of a checkpoint barrier n starts an epoch n, however the barrier itself belongs in epoch n-1.
- * Is also in charge of managing reference counts of buffers, as they are released in the network stack.
- * On checkpoint complete, truncates the log by deleting all epochs with an ID < checkpointID.
- * Epoch with ID checkpointID is saved as it starts after this checkpoint.
- * Decreases reference counts of stored buffers.
-/*/
+ * An InFlightLog records {@link Buffer} instances which have been sent to other tasks. The
+ * processing of a checkpoint barrier n starts an epoch n, however the barrier itself belongs in
+ * epoch n-1. Is also in charge of managing reference counts of buffers, as they are released in the
+ * network stack. On checkpoint complete, truncates the log by deleting all epochs with an ID <
+ * checkpointID. Epoch with ID checkpointID is saved as it starts after this checkpoint. Decreases
+ * reference counts of stored buffers. /
+ */
 public interface InFlightLog extends CheckpointListener {
 
-	void registerBufferPool(BufferPool bufferPool);
+    void registerBufferPool(BufferPool bufferPool);
 
-	/**
-	 * Appends the provided buffer to the log slice of the provided epochID
-	 */
-	void log(Buffer buffer, long epochID, boolean isFinished);
+    /** Appends the provided buffer to the log slice of the provided epochID */
+    void log(Buffer buffer, long epochID, boolean isFinished);
 
-
-
-	/**
-	 * Creates an Iterator starting at the provided epoch.
-	 * Also increases the reference counts of stored buffers, as they are freed downstream in the network stack.
-	 * Skips the first <code>ignoreBuffers</code> buffers
-	 */
-	InFlightLogIterator<Buffer> getInFlightIterator(long epochID, int ignoreBuffers);
+    /**
+     * Creates an Iterator starting at the provided epoch. Also increases the reference counts of
+     * stored buffers, as they are freed downstream in the network stack. Skips the first <code>
+     * ignoreBuffers</code> buffers
+     */
+    InFlightLogIterator<Buffer> getInFlightIterator(long epochID, int ignoreBuffers);
 
     void destroyBufferPools();
 
-	void close();
+    void close();
 
-	BufferPool getInFlightBufferPool();
+    BufferPool getInFlightBufferPool();
 }

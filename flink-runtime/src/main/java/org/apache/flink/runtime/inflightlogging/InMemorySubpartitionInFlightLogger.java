@@ -19,6 +19,7 @@ package org.apache.flink.runtime.inflightlogging;
 
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.buffer.BufferPool;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,188 +28,226 @@ import java.util.stream.Collectors;
 
 public class InMemorySubpartitionInFlightLogger implements InFlightLog {
 
-	private static final Logger LOG = LoggerFactory.getLogger(InMemorySubpartitionInFlightLogger.class);
+    private static final Logger LOG =
+            LoggerFactory.getLogger(InMemorySubpartitionInFlightLogger.class);
 
-	private final SortedMap<Long, List<Buffer>> slicedLog;
-	private BufferPool inFlightBufferPool;
+    private final SortedMap<Long, List<Buffer>> slicedLog;
+    private BufferPool inFlightBufferPool;
 
-	public InMemorySubpartitionInFlightLogger() {
-		slicedLog = new TreeMap<>();
-	}
+    public InMemorySubpartitionInFlightLogger() {
+        slicedLog = new TreeMap<>();
+    }
 
-	@Override
-	public void registerBufferPool(BufferPool bufferPool) {
-		this.inFlightBufferPool = bufferPool;
-	}
+    @Override
+    public void registerBufferPool(BufferPool bufferPool) {
+        this.inFlightBufferPool = bufferPool;
+    }
 
-	public synchronized void log(Buffer buffer, long epochID, boolean isFinished) {
-		List<Buffer> epochLog = slicedLog.computeIfAbsent(epochID, k -> {
-            return new LinkedList<>();
-        });
-		epochLog.add(buffer.retainBuffer());
-//		LOG.debug("Logged a new buffer for epoch {}", epochID);
-	}
+    public synchronized void log(Buffer buffer, long epochID, boolean isFinished) {
+        List<Buffer> epochLog =
+                slicedLog.computeIfAbsent(
+                        epochID,
+                        k -> {
+                            return new LinkedList<>();
+                        });
+        epochLog.add(buffer.retainBuffer());
+        //		LOG.debug("Logged a new buffer for epoch {}", epochID);
+    }
 
-	@Override
-	public synchronized void notifyCheckpointComplete(long checkpointId) throws Exception {
+    @Override
+    public synchronized void notifyCheckpointComplete(long checkpointId) throws Exception {
 
-		LOG.debug("Got notified of checkpoint {} completion\nCurrent log: {}", checkpointId, representLogAsString(this.slicedLog));
-		List<Long> toRemove = new LinkedList<>();
+        LOG.debug(
+                "Got notified of checkpoint {} completion\nCurrent log: {}",
+                checkpointId,
+                representLogAsString(this.slicedLog));
+        List<Long> toRemove = new LinkedList<>();
 
-		//keys are in ascending order
-		for (long epochId : slicedLog.keySet()) {
-			if (epochId < checkpointId) {
-				toRemove.add(epochId);
-//				LOG.debug("Removing epoch {}", epochId);
-			}
-		}
+        // keys are in ascending order
+        for (long epochId : slicedLog.keySet()) {
+            if (epochId < checkpointId) {
+                toRemove.add(epochId);
+                //				LOG.debug("Removing epoch {}", epochId);
+            }
+        }
 
-		for (long checkpointBarrierId : toRemove) {
-			List<Buffer> slice = slicedLog.remove(checkpointBarrierId);
-			for (Buffer b : slice) {
-				b.recycleBuffer();
-			}
-		}
-	}
+        for (long checkpointBarrierId : toRemove) {
+            List<Buffer> slice = slicedLog.remove(checkpointBarrierId);
+            for (Buffer b : slice) {
+                b.recycleBuffer();
+            }
+        }
+    }
 
-	@Override
-	public synchronized InFlightLogIterator<Buffer> getInFlightIterator(long startEpochID, int ignoreBuffers) {
-		//The lower network stack recycles buffers, so for each replay, we must increase reference counts
-		increaseReferenceCountsUnsafe(startEpochID);
-		ReplayIterator replayIterator = new  ReplayIterator(startEpochID, slicedLog);
+    @Override
+    public synchronized InFlightLogIterator<Buffer> getInFlightIterator(
+            long startEpochID, int ignoreBuffers) {
+        // The lower network stack recycles buffers, so for each replay, we must increase reference
+        // counts
+        increaseReferenceCountsUnsafe(startEpochID);
+        ReplayIterator replayIterator = new ReplayIterator(startEpochID, slicedLog);
 
-		for(int i = 0; i < ignoreBuffers; i++)
-			replayIterator.next().recycleBuffer();
+        for (int i = 0; i < ignoreBuffers; i++) replayIterator.next().recycleBuffer();
 
-		return replayIterator;
-	}
+        return replayIterator;
+    }
 
-	@Override
-	public void destroyBufferPools() {
+    @Override
+    public void destroyBufferPools() {}
 
-	}
-
-	@Override
-	public synchronized void close() {
-		for(List<Buffer> epoch : slicedLog.values()){
-            for(Buffer b : epoch) {
+    @Override
+    public synchronized void close() {
+        for (List<Buffer> epoch : slicedLog.values()) {
+            for (Buffer b : epoch) {
                 b.recycleBuffer();
             }
             epoch.clear();
         }
         slicedLog.clear();
-	}
+    }
 
-	@Override
-	public BufferPool getInFlightBufferPool() {
-		return inFlightBufferPool;
-	}
+    @Override
+    public BufferPool getInFlightBufferPool() {
+        return inFlightBufferPool;
+    }
 
-	private void increaseReferenceCountsUnsafe(Long epochID) {
-		for (List<Buffer> epoch : slicedLog.tailMap(epochID).values())
-			for (Buffer buffer : epoch)
-				buffer.retainBuffer();
-	}
+    private void increaseReferenceCountsUnsafe(Long epochID) {
+        for (List<Buffer> epoch : slicedLog.tailMap(epochID).values())
+            for (Buffer buffer : epoch) buffer.retainBuffer();
+    }
 
-	public static class ReplayIterator extends InFlightLogIterator<Buffer> {
-		private long startKey;
-		private long currentKey;
-		private ListIterator<Buffer> currentIterator;
-		private SortedMap<Long, List<Buffer>> logToReplay;
-		private int numberOfBuffersLeft;
+    public static class ReplayIterator extends InFlightLogIterator<Buffer> {
+        private long startKey;
+        private long currentKey;
+        private ListIterator<Buffer> currentIterator;
+        private SortedMap<Long, List<Buffer>> logToReplay;
+        private int numberOfBuffersLeft;
 
-		public ReplayIterator(long epochToStartFrom, SortedMap<Long, List<Buffer>> fullLog) {
+        public ReplayIterator(long epochToStartFrom, SortedMap<Long, List<Buffer>> fullLog) {
 
-			//Failed at checkpoint x, so we replay starting at epoch x
-			this.startKey = epochToStartFrom;
-			this.currentKey = epochToStartFrom;
-			this.logToReplay = fullLog.tailMap(epochToStartFrom);
+            // Failed at checkpoint x, so we replay starting at epoch x
+            this.startKey = epochToStartFrom;
+            this.currentKey = epochToStartFrom;
+            this.logToReplay = fullLog.tailMap(epochToStartFrom);
             LOG.info(" Getting iterator starting  from checkpointId {}", currentKey);
-//			LOG.debug(" Getting iterator starting  from epochID {} with log state {} and sublog state {}", currentKey, representLogAsString(fullLog), representLogAsString(this.logToReplay));
-			if (this.logToReplay.get(currentKey) != null) {
-				this.currentIterator = this.logToReplay.get(currentKey).listIterator();
-				this.numberOfBuffersLeft = this.logToReplay.values().stream().mapToInt(List::size).sum(); //add up the sizes
-			} else {
-				this.currentIterator = null;
-				this.numberOfBuffersLeft = 0;
-			}
-//			LOG.debug("State of log: {}\nlog tailmap {}\nIterator creation {}: ", representLogAsString(fullLog), representLogAsString(this.logToReplay), this.toString());
-		}
+            //			LOG.debug(" Getting iterator starting  from epochID {} with log state {} and sublog
+            // state {}", currentKey, representLogAsString(fullLog),
+            // representLogAsString(this.logToReplay));
+            if (this.logToReplay.get(currentKey) != null) {
+                this.currentIterator = this.logToReplay.get(currentKey).listIterator();
+                this.numberOfBuffersLeft =
+                        this.logToReplay.values().stream()
+                                .mapToInt(List::size)
+                                .sum(); // add up the sizes
+            } else {
+                this.currentIterator = null;
+                this.numberOfBuffersLeft = 0;
+            }
+            //			LOG.debug("State of log: {}\nlog tailmap {}\nIterator creation {}: ",
+            // representLogAsString(fullLog), representLogAsString(this.logToReplay),
+            // this.toString());
+        }
 
-		private void advanceToNextNonEmptyIteratorIfNeeded() {
-			while (currentIterator != null &&!currentIterator.hasNext() && currentKey < logToReplay.lastKey()) {
-				this.currentIterator = logToReplay.get(++currentKey).listIterator();
-				while (currentIterator.hasPrevious()) currentIterator.previous();
-			}
-		}
+        private void advanceToNextNonEmptyIteratorIfNeeded() {
+            while (currentIterator != null
+                    && !currentIterator.hasNext()
+                    && currentKey < logToReplay.lastKey()) {
+                this.currentIterator = logToReplay.get(++currentKey).listIterator();
+                while (currentIterator.hasPrevious()) currentIterator.previous();
+            }
+        }
 
-		private void advanceToPreviousNonEmptyIteratorIfNeeded() {
-			while (currentIterator != null && !currentIterator.hasPrevious() && currentKey > logToReplay.firstKey()) {
-				this.currentIterator = logToReplay.get(--currentKey).listIterator();
-				while (currentIterator.hasNext()) currentIterator.next(); //fast forward the iterator
-			}
-		}
+        private void advanceToPreviousNonEmptyIteratorIfNeeded() {
+            while (currentIterator != null
+                    && !currentIterator.hasPrevious()
+                    && currentKey > logToReplay.firstKey()) {
+                this.currentIterator = logToReplay.get(--currentKey).listIterator();
+                while (currentIterator.hasNext())
+                    currentIterator.next(); // fast forward the iterator
+            }
+        }
 
-		@Override
-		public boolean hasNext() {
-			advanceToNextNonEmptyIteratorIfNeeded();
-			return currentIterator != null && currentIterator.hasNext();
-		}
+        @Override
+        public boolean hasNext() {
+            advanceToNextNonEmptyIteratorIfNeeded();
+            return currentIterator != null && currentIterator.hasNext();
+        }
 
-		@Override
-		public Buffer next() {
-			advanceToNextNonEmptyIteratorIfNeeded();
-			Buffer toReturn = currentIterator.next();
-			numberOfBuffersLeft--;
-			advanceToNextNonEmptyIteratorIfNeeded();
-			return toReturn;
-		}
+        @Override
+        public Buffer next() {
+            advanceToNextNonEmptyIteratorIfNeeded();
+            Buffer toReturn = currentIterator.next();
+            numberOfBuffersLeft--;
+            advanceToNextNonEmptyIteratorIfNeeded();
+            return toReturn;
+        }
 
-		@Override
-		public Buffer peekNext() {
-			advanceToNextNonEmptyIteratorIfNeeded();
-			Buffer toReturn = currentIterator.next();
-			currentIterator.previous();
-			advanceToNextNonEmptyIteratorIfNeeded();
-			return toReturn;
-		}
+        @Override
+        public Buffer peekNext() {
+            advanceToNextNonEmptyIteratorIfNeeded();
+            Buffer toReturn = currentIterator.next();
+            currentIterator.previous();
+            advanceToNextNonEmptyIteratorIfNeeded();
+            return toReturn;
+        }
 
-		@Override
-		public void close() {
-			while (this.hasNext())
-				this.next().recycleBuffer();
-		}
+        @Override
+        public void close() {
+            while (this.hasNext()) this.next().recycleBuffer();
+        }
 
-		@Override
-		public int numberRemaining() {
-			return numberOfBuffersLeft;
-		}
+        @Override
+        public int numberRemaining() {
+            return numberOfBuffersLeft;
+        }
 
-		@Override
-		public long getEpoch() {
-			return currentKey;
-		}
+        @Override
+        public long getEpoch() {
+            return currentKey;
+        }
 
+        @Override
+        public String toString() {
+            return "ReplayIterator{"
+                    + "startKey="
+                    + startKey
+                    + ", currentKey="
+                    + currentKey
+                    + ", currentIterator="
+                    + currentIterator
+                    + ", logToReplay="
+                    + representLogAsString(logToReplay)
+                    + ", numberOfBuffersLeft="
+                    + numberOfBuffersLeft
+                    + ", reduceCount="
+                    + logToReplay.values().stream().mapToInt(List::size).sum()
+                    + ", lists="
+                    + logToReplay.values().stream()
+                            .map(
+                                    l ->
+                                            "["
+                                                    + l.stream()
+                                                            .map(x -> "*")
+                                                            .collect(Collectors.joining(", "))
+                                                    + "]")
+                            .collect(Collectors.joining("; "))
+                    + '}';
+        }
+    }
 
-
-		@Override
-		public String toString() {
-			return "ReplayIterator{" +
-
-				"startKey=" + startKey +
-				", currentKey=" + currentKey +
-				", currentIterator=" + currentIterator +
-				", logToReplay=" + representLogAsString(logToReplay) +
-				", numberOfBuffersLeft=" + numberOfBuffersLeft +
-				", reduceCount=" + logToReplay.values().stream().mapToInt(List::size).sum() +
-				", lists=" + logToReplay.values().stream().map(l -> "[" + l.stream().map(x -> "*").collect(Collectors.joining(", ")) + "]").collect(Collectors.joining("; ")) +
-				'}';
-		}
-
-	}
-
-	private static String representLogAsString(SortedMap<Long, List<Buffer>> toStringify) {
-		return "{" + toStringify.entrySet().stream().map(e -> e.getKey() + " -> " + "[" + e.getValue().stream().map(x -> "*").collect(Collectors.joining(", ")) + "]").collect(Collectors.joining(", ")) + "}";
-	}
-
+    private static String representLogAsString(SortedMap<Long, List<Buffer>> toStringify) {
+        return "{"
+                + toStringify.entrySet().stream()
+                        .map(
+                                e ->
+                                        e.getKey()
+                                                + " -> "
+                                                + "["
+                                                + e.getValue().stream()
+                                                        .map(x -> "*")
+                                                        .collect(Collectors.joining(", "))
+                                                + "]")
+                        .collect(Collectors.joining(", "))
+                + "}";
+    }
 }

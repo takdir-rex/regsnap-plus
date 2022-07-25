@@ -598,36 +598,37 @@ public class JobVertex implements java.io.Serializable {
 
     /**
      * Return true if this JobVertex is a direct upstream of the given snapshot group
+     *
      * @param givenSnapshotGroup the given snapshot group
-     * @return True if this JobVertex is a direct upstream of the given snapshot group, otherwise return False.
+     * @return True if this JobVertex is a direct upstream of the given snapshot group, otherwise
+     *     return False.
      */
     public boolean isDirectUpstreamOfSnapshotGroup(String givenSnapshotGroup) {
-        if(isOutputVertex()){
+        if (isOutputVertex()) {
             return false;
         }
         for (IntermediateDataSet output : getProducedDataSets()) {
-            for(JobEdge edge : output.getConsumers()){
+            for (JobEdge edge : output.getConsumers()) {
                 String targetSnapshotGroup = edge.getTarget().getSnapshotGroup();
-                if (Objects.equals(targetSnapshotGroup, givenSnapshotGroup) &&
-                        !Objects.equals(snapshotGroup, givenSnapshotGroup)) {
+                if (Objects.equals(targetSnapshotGroup, givenSnapshotGroup)
+                        && !Objects.equals(snapshotGroup, givenSnapshotGroup)) {
                     return true;
                 }
             }
-
         }
         return false;
     }
 
     public boolean isDownStreamOfSnapshotGroup(String givenSnapshotGroup) {
-        if(isInputVertex()){
+        if (isInputVertex()) {
             return false;
         }
         ArrayList<JobVertex> vertices = new ArrayList<>();
         vertices.add(this);
-        while (!vertices.isEmpty()){
+        while (!vertices.isEmpty()) {
             for (JobEdge jobEdge : vertices.remove(0).getInputs()) {
                 JobVertex upStream = jobEdge.getSource().getProducer();
-                if(!upStream.isInputVertex()){
+                if (!upStream.isInputVertex()) {
                     vertices.add(upStream);
                 }
                 if (Objects.equals(upStream.getSnapshotGroup(), givenSnapshotGroup)) {

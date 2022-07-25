@@ -77,7 +77,14 @@ public class TaskInformation implements Serializable {
             int maxNumberOfSubtasks,
             String invokableClassName,
             Configuration taskConfiguration) {
-        this(new JobVertex(taskName, jobVertexId), jobVertexId, taskName, numberOfSubtasks, maxNumberOfSubtasks, invokableClassName, taskConfiguration);
+        this(
+                new JobVertex(taskName, jobVertexId),
+                jobVertexId,
+                taskName,
+                numberOfSubtasks,
+                maxNumberOfSubtasks,
+                invokableClassName,
+                taskConfiguration);
     }
 
     public JobVertexID getJobVertexId() {

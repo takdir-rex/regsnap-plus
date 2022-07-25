@@ -71,13 +71,14 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             }
         }
         BufferAndBacklog result = super.pollBuffer();
-        if(result != null) {
+        if (result != null) {
             Buffer buffer = result.buffer();
-            if(buffer.getDataType() == Buffer.DataType.EVENT_BUFFER){
+            if (buffer.getDataType() == Buffer.DataType.EVENT_BUFFER) {
                 Buffer eventBuffer = buffer.retainBuffer();
                 CheckpointBarrier barrier = null;
                 try {
-                    final AbstractEvent event = EventSerializer.fromBuffer(eventBuffer, getClass().getClassLoader());
+                    final AbstractEvent event =
+                            EventSerializer.fromBuffer(eventBuffer, getClass().getClassLoader());
                     barrier = event instanceof CheckpointBarrier ? (CheckpointBarrier) event : null;
                 } catch (IOException e) {
                     throw new IllegalStateException(
@@ -85,7 +86,7 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
                 } finally {
                     eventBuffer.recycleBuffer();
                 }
-                if(barrier != null){
+                if (barrier != null) {
                     downstreamCheckpointId = barrier.getId();
                     inFlightLog.close();
                 }
@@ -100,15 +101,20 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
 
     private BufferAndBacklog getReplayedBufferUnsafe() {
         Buffer buffer = inflightReplayIterator.next();
-        Buffer.DataType nextDataType = isDataAvailableUnsafe() ? getNextBufferTypeUnsafe() : Buffer.DataType.NONE;
+        Buffer.DataType nextDataType =
+                isDataAvailableUnsafe() ? getNextBufferTypeUnsafe() : Buffer.DataType.NONE;
         if (inflightReplayIterator.hasNext()) {
             nextDataType = inflightReplayIterator.peekNext().getDataType();
         } else {
             inflightReplayIterator = null;
             LOG.debug("Finished replaying inflight log!");
         }
-        return new BufferAndBacklog(buffer,
-                getBuffersInBacklogUnsafe() + (inflightReplayIterator != null ? inflightReplayIterator.numberRemaining() : 0),
+        return new BufferAndBacklog(
+                buffer,
+                getBuffersInBacklogUnsafe()
+                        + (inflightReplayIterator != null
+                                ? inflightReplayIterator.numberRemaining()
+                                : 0),
                 nextDataType,
                 sequenceNumber++);
     }
@@ -166,14 +172,13 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             isBlocked = false;
             sequenceNumber = 0;
 
-            //initiate iterator for inFlightLog
+            // initiate iterator for inFlightLog
             if (inflightReplayIterator != null) {
                 inflightReplayIterator.close();
             }
             inflightReplayIterator = inFlightLog.getInFlightIterator(downstreamCheckpointId, 0);
             if (inflightReplayIterator != null) {
-                if (!inflightReplayIterator.hasNext())
-                    inflightReplayIterator = null;
+                if (!inflightReplayIterator.hasNext()) inflightReplayIterator = null;
             }
         }
     }

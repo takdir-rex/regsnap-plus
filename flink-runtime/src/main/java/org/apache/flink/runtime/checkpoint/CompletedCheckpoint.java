@@ -111,6 +111,19 @@ public class CompletedCheckpoint implements Serializable, Checkpoint {
 
     // ------------------------------------------------------------------------
 
+
+   public CompletedCheckpoint(
+            JobID job,
+            long checkpointID,
+            long timestamp,
+            long completionTimestamp,
+            Map<OperatorID, OperatorState> operatorStates,
+            @Nullable Collection<MasterState> masterHookStates,
+            CheckpointProperties props,
+            CompletedCheckpointStorageLocation storageLocation) {
+        this(job, checkpointID,timestamp, completionTimestamp, operatorStates, masterHookStates, props, storageLocation, null);
+    }
+
     public CompletedCheckpoint(
             JobID job,
             long checkpointID,
@@ -342,7 +355,7 @@ public class CompletedCheckpoint implements Serializable, Checkpoint {
      *
      * @return
      */
-    public String getSnapshotGroup(){
+    public String getSnapshotGroup() {
         return snapshotGroup;
     }
 }

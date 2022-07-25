@@ -233,9 +233,9 @@ class TaskStateAssignment {
             return InflightDataRescalingDescriptor.NO_RESCALE;
         }
 
-        //do not support rescaling for out of snapshot group operators
-        for(TaskStateAssignment assignment : connectedAssignments){
-            if(assignment == null){
+        // do not support rescaling for out of snapshot group operators
+        for (TaskStateAssignment assignment : connectedAssignments) {
+            if (assignment == null) {
                 return InflightDataRescalingDescriptor.NO_RESCALE;
             }
         }

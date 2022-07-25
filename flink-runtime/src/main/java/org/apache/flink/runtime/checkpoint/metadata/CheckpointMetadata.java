@@ -32,7 +32,7 @@ public class CheckpointMetadata implements Disposable {
     /** The checkpoint ID. */
     private final long checkpointId;
 
-//    private final String snapshotGroup;
+    //    private final String snapshotGroup;
 
     /** The operator states. */
     private final Collection<OperatorState> operatorStates;
@@ -41,6 +41,13 @@ public class CheckpointMetadata implements Disposable {
     private final Collection<MasterState> masterStates;
 
     private final String snapshotGroup;
+
+    public CheckpointMetadata(
+            long checkpointId,
+            Collection<OperatorState> operatorStates,
+            Collection<MasterState> masterStates) {
+        this(checkpointId, operatorStates, masterStates, null);
+    }
 
     public CheckpointMetadata(
             long checkpointId,

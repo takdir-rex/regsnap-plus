@@ -213,12 +213,20 @@ public class EventSerializer {
                         ? null
                         : checkpointOptions.getTargetLocation().getReferenceBytes();
 
-        final byte[] snapshotGroupBytes = checkpointOptions.getSnapshotGroup() == null
-                ? null
-                : checkpointOptions.getSnapshotGroup().getBytes();
+        final byte[] snapshotGroupBytes =
+                checkpointOptions.getSnapshotGroup() == null
+                        ? null
+                        : checkpointOptions.getSnapshotGroup().getBytes();
 
         final ByteBuffer buf =
-                ByteBuffer.allocate(38 + (locationBytes == null ? 0 : locationBytes.length) + 4 + (snapshotGroupBytes == null ? 0 : snapshotGroupBytes.length)); // 4 bytes integer to store snapshotGroupLen
+                ByteBuffer.allocate(
+                        38
+                                + (locationBytes == null ? 0 : locationBytes.length)
+                                + 4
+                                + (snapshotGroupBytes == null
+                                        ? 0
+                                        : snapshotGroupBytes.length)); // 4 bytes integer to store
+        // snapshotGroupLen
 
         // we do not use checkpointType.ordinal() here to make the serialization robust
         // against changes in the enum (such as changes in the order of the values)
@@ -307,7 +315,11 @@ public class EventSerializer {
                 id,
                 timestamp,
                 new CheckpointOptions(
-                        checkpointType, locationRef, alignmentType, alignmentTimeout, snapshotGroup));
+                        checkpointType,
+                        locationRef,
+                        alignmentType,
+                        alignmentTimeout,
+                        snapshotGroup));
     }
 
     // ------------------------------------------------------------------------

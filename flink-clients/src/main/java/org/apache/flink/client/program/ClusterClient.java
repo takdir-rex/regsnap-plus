@@ -169,6 +169,11 @@ public interface ClusterClient<T> extends AutoCloseable {
     CompletableFuture<String> triggerSavepoint(
             JobID jobId, @Nullable String savepointDirectory, @Nullable String snapshotGroup);
 
+    default CompletableFuture<String> triggerSavepoint(
+            JobID jobId, @Nullable String savepointDirectory) {
+        return triggerSavepoint(jobId, savepointDirectory, null);
+    }
+
     /**
      * Sends out a request to a specified coordinator and return the response.
      *
