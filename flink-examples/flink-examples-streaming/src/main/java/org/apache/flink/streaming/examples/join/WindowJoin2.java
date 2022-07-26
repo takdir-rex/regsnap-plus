@@ -69,6 +69,7 @@ public class WindowJoin2 {
 
         Configuration conf = new Configuration();
         conf.setInteger("taskmanager.numberOfTaskSlots", 8);
+        // for testing more than 1 task manager, set ConfigConstants.DEFAULT_LOCAL_NUMBER_TASK_MANAGER
         final File checkpointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "checkpoint");
         final File savepointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "savepoint");
 
@@ -152,7 +153,7 @@ public class WindowJoin2 {
 //                .snapshotGroup("snapshot-2");
 
         // print the results with a single thread, rather than in parallel
-        joinedStream.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snapshot-1");
+        joinedStream.addSink(new FailingSink<>()).setParallelism(1).uid("Sink").name("Sink").snapshotGroup("snapshot-1");
 //        joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
 
 //                System.out.println(env.getExecutionPlan());

@@ -21,9 +21,12 @@ package org.apache.flink.runtime.io.network.partition;
 /** View over a pipelined in-memory only subpartition allowing reconnecting. */
 public class PipelinedApproximateSubpartitionView extends PipelinedSubpartitionView {
 
+    private final PipelinedApproximateSubpartition parent;
+
     PipelinedApproximateSubpartitionView(
             PipelinedApproximateSubpartition parent, BufferAvailabilityListener listener) {
         super(parent, listener);
+        this.parent = parent;
     }
 
     /**
@@ -36,5 +39,10 @@ public class PipelinedApproximateSubpartitionView extends PipelinedSubpartitionV
     @Override
     public void releaseAllResources() {
         isReleased.compareAndSet(false, true);
+    }
+
+    @Override
+    public AvailabilityWithBacklog getAvailabilityAndBacklog(int numCreditsAvailable) {
+        return parent.getAvailabilityAndBacklog(numCreditsAvailable);
     }
 }

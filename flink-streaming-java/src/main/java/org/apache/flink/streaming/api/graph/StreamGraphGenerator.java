@@ -304,7 +304,7 @@ public class StreamGraphGenerator {
 
     public StreamGraph generate() {
         streamGraph = new StreamGraph(executionConfig, checkpointConfig, savepointRestoreSettings);
-        streamGraph.setAllVerticesInSameSlotSharingGroupByDefault(false);
+        streamGraph.setAllVerticesInSameSlotSharingGroupByDefault(false); //change default
         streamGraph.setEnableCheckpointsAfterTasksFinish(
                 configuration.get(
                         ExecutionCheckpointingOptions.ENABLE_CHECKPOINTS_AFTER_TASKS_FINISH));
@@ -321,8 +321,15 @@ public class StreamGraphGenerator {
 
         setFineGrainedGlobalStreamExchangeMode(streamGraph);
 
-        for (StreamNode node : streamGraph.getStreamNodes()) {
-            node.setSlotSharingGroup(UUID.randomUUID().toString());
+        Collection<StreamNode> streamNodes = streamGraph.getStreamNodes();
+        int middleIndex = 2*streamNodes.size()/3;
+        int counter = 0;
+        for (StreamNode node : streamNodes) {
+            counter++;
+            node.setSlotSharingGroup(UUID.randomUUID().toString());//assign unique slot name
+            if(counter >= middleIndex){
+                node.setSnapshotGroup("snapshot-1");
+            }
             if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
                 for (StreamEdge edge : node.getInEdges()) {
                     edge.setSupportsUnalignedCheckpoints(false);

@@ -94,7 +94,7 @@ public class PipelinedSubpartition extends ResultSubpartition
     private boolean isFinished;
 
     @GuardedBy("buffers")
-    private boolean flushRequested;
+    protected boolean flushRequested;
 
     /** Flag indicating whether the subpartition has been released. */
     volatile boolean isReleased;
@@ -584,7 +584,7 @@ public class PipelinedSubpartition extends ResultSubpartition
                 && getNumberOfFinishedBuffers() == 1;
     }
 
-    private void notifyDataAvailable() {
+    protected void notifyDataAvailable() {
         final PipelinedSubpartitionView readView = this.readView;
         if (readView != null) {
             readView.notifyDataAvailable();

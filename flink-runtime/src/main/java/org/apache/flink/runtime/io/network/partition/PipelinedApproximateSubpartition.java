@@ -184,6 +184,30 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
     }
 
     @Override
+    public void flush() {
+        if (inflightReplayIterator != null) {
+            if (inflightReplayIterator.hasNext()){
+                flushRequested = true;
+                notifyDataAvailable();
+                return;
+            }
+        }
+        super.flush();
+    }
+
+    public ResultSubpartitionView.AvailabilityWithBacklog getAvailabilityAndBacklog(
+            int numCreditsAvailable) {
+        if (inflightReplayIterator != null) {
+            if (inflightReplayIterator.hasNext()) {
+                return new ResultSubpartitionView.AvailabilityWithBacklog(
+                        true, getBuffersInBacklogUnsafe()
+                        + inflightReplayIterator.numberRemaining());
+            }
+        }
+        return super.getAvailabilityAndBacklog(numCreditsAvailable);
+    }
+
+    @Override
     public void finishReadRecoveredState(boolean notifyAndBlockOnCompletion) throws IOException {
         // The Approximate Local Recovery can not work with unaligned checkpoint for now, so no need
         // to recover channel state
