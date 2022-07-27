@@ -321,20 +321,35 @@ public class StreamGraphGenerator {
 
         setFineGrainedGlobalStreamExchangeMode(streamGraph);
 
+        //load user provided snapshot group config
+        Configuration config = (Configuration) configuration;
+        List<Integer> sgIndexes = new ArrayList<>();
+        String sgsString = config.getString("g", "");
+        for (String sgIdxStr : sgsString.split(",")) {
+            if(!sgIdxStr.trim().isEmpty()){
+                sgIndexes.add(Integer.valueOf(sgIdxStr));
+            }
+        }
+        Collections.sort(sgIndexes, Collections.reverseOrder());
+        LOG.info("Snapshot Groups Indexes: {}", sgIndexes);
+
         Collection<StreamNode> streamNodes = streamGraph.getStreamNodes();
-        int middleIndex = 2*streamNodes.size()/3;
+        LOG.info("Number of Stream Nodes: {}", streamNodes.size());
         int counter = 0;
         for (StreamNode node : streamNodes) {
-            counter++;
-            node.setSlotSharingGroup(UUID.randomUUID().toString());//assign unique slot name
-            if(counter >= middleIndex){
-                node.setSnapshotGroup("snapshot-1");
+            node.setSlotSharingGroup(UUID.randomUUID().toString()); //assign unique slot name
+            for(Integer sgIdx : sgIndexes){
+                if(counter >= sgIdx){
+                    node.setSnapshotGroup("snapshot-" + sgIdx);
+                    break;
+                }
             }
             if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
                 for (StreamEdge edge : node.getInEdges()) {
                     edge.setSupportsUnalignedCheckpoints(false);
                 }
             }
+            counter++;
         }
 
         final StreamGraph builtStreamGraph = streamGraph;

@@ -24,6 +24,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.table.client.SqlClientException;
 import org.apache.flink.table.client.cli.CliOptions;
+import org.apache.flink.table.client.cli.CliOptionsParser;
 import org.apache.flink.table.client.gateway.SqlExecutionException;
 import org.apache.flink.table.client.gateway.context.DefaultContext;
 import org.apache.flink.table.client.gateway.context.SessionContext;
@@ -75,6 +76,9 @@ public class LocalContextUtils {
                 CliFrontend.loadCustomCommandLines(configuration, flinkConfigDir);
 
         configuration.addAll(options.getPythonConfiguration());
+
+        configuration.setString(CliOptionsParser.OPTION_SNAPSHOTGROUPS.getOpt(), options.getSnapshotGroupConfiguration());
+
         final List<URL> dependencies = discoverDependencies(jars, libDirs);
 
         return new DefaultContext(dependencies, configuration, commandLines);

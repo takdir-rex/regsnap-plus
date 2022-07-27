@@ -137,6 +137,16 @@ public class CliOptionsParser {
                                     + "auto-generate one under your user's home directory.")
                     .build();
 
+    public static final Option OPTION_SNAPSHOTGROUPS =
+            Option.builder("g")
+                    .required(false)
+                    .longOpt("snapshotgroups")
+                    .numberOfArgs(1)
+                    .argName("Snapshot Groups")
+                    .desc(
+                            "Comma separated indexes of snapshot groups to be created")
+                    .build();
+
     private static final Options EMBEDDED_MODE_CLIENT_OPTIONS =
             getEmbeddedModeClientOptions(new Options());
     private static final Options GATEWAY_MODE_CLIENT_OPTIONS =
@@ -162,6 +172,7 @@ public class CliOptionsParser {
         options.addOption(PYARCHIVE_OPTION);
         options.addOption(PYEXEC_OPTION);
         options.addOption(PYCLIENTEXEC_OPTION);
+        options.addOption(OPTION_SNAPSHOTGROUPS);
         return options;
     }
 
@@ -273,7 +284,8 @@ public class CliOptionsParser {
                     checkUrls(line, CliOptionsParser.OPTION_LIBRARY),
                     line.getOptionValue(CliOptionsParser.OPTION_UPDATE.getOpt()),
                     line.getOptionValue(CliOptionsParser.OPTION_HISTORY.getOpt()),
-                    getPythonConfiguration(line));
+                    getPythonConfiguration(line),
+                    line.getOptionValue(CliOptionsParser.OPTION_SNAPSHOTGROUPS.getOpt(), ""));
         } catch (ParseException e) {
             throw new SqlClientException(e.getMessage());
         }

@@ -40,6 +40,7 @@ public class CliOptions {
     private final String updateStatement;
     private final String historyFilePath;
     private final Configuration pythonConfiguration;
+    private final String snapshotGroupConfiguration;
 
     public CliOptions(
             boolean isPrintHelp,
@@ -51,6 +52,20 @@ public class CliOptions {
             String updateStatement,
             String historyFilePath,
             Configuration pythonConfiguration) {
+        this(isPrintHelp, sessionId, initFile, sqlFile, jars, libraryDirs, updateStatement, historyFilePath, pythonConfiguration, "");
+    }
+
+    public CliOptions(
+            boolean isPrintHelp,
+            String sessionId,
+            URL initFile,
+            URL sqlFile,
+            List<URL> jars,
+            List<URL> libraryDirs,
+            String updateStatement,
+            String historyFilePath,
+            Configuration pythonConfiguration,
+            String snapshotGroupConfiguration) {
         this.isPrintHelp = isPrintHelp;
         this.sessionId = sessionId;
         this.initFile = initFile;
@@ -60,6 +75,7 @@ public class CliOptions {
         this.updateStatement = updateStatement;
         this.historyFilePath = historyFilePath;
         this.pythonConfiguration = pythonConfiguration;
+        this.snapshotGroupConfiguration = snapshotGroupConfiguration;
     }
 
     public boolean isPrintHelp() {
@@ -96,5 +112,9 @@ public class CliOptions {
 
     public Configuration getPythonConfiguration() {
         return pythonConfiguration;
+    }
+
+    public String getSnapshotGroupConfiguration() {
+        return snapshotGroupConfiguration;
     }
 }
