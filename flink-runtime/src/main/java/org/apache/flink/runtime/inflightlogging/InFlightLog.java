@@ -29,9 +29,7 @@ import org.apache.flink.runtime.io.network.buffer.BufferPool;
  * checkpointID. Epoch with ID checkpointID is saved as it starts after this checkpoint. Decreases
  * reference counts of stored buffers. /
  */
-public interface InFlightLog extends CheckpointListener {
-
-    void registerBufferPool(BufferPool bufferPool);
+public interface InFlightLog {
 
     /** Appends the provided buffer to the log slice of the provided epochID */
     void log(Buffer buffer, long epochID, boolean isFinished);
@@ -43,9 +41,6 @@ public interface InFlightLog extends CheckpointListener {
      */
     InFlightLogIterator<Buffer> getInFlightIterator(long epochID, int ignoreBuffers);
 
-    void destroyBufferPools();
-
     void close();
 
-    BufferPool getInFlightBufferPool();
 }

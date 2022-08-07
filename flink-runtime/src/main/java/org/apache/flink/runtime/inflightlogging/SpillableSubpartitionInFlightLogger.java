@@ -77,12 +77,6 @@ public class SpillableSubpartitionInFlightLogger implements InFlightLog {
     }
 
     @Override
-    public void registerBufferPool(BufferPool bufferPool) {
-        LOG.debug("Registered inFlightBufferPool: {}", bufferPool);
-        this.inFlightBufferPool = bufferPool;
-    }
-
-    @Override
     public void log(Buffer buffer, long epochID, boolean isFinished) {
         synchronized (flushLock) {
             if (closed) {
@@ -94,7 +88,7 @@ public class SpillableSubpartitionInFlightLogger implements InFlightLog {
 
             Epoch epoch = slicedLog.computeIfAbsent(epochID, k -> new Epoch(createNewWriter(k), k));
             epoch.append(buffer);
-            if (eagerlySpill) flushAllUnflushed();
+//            if (eagerlySpill) flushAllUnflushed();
             if (isReplaying.get()) currentIterator.notifyNewBufferAdded(epochID);
         }
         LOG.debug(
@@ -102,23 +96,6 @@ public class SpillableSubpartitionInFlightLogger implements InFlightLog {
                 epochID,
                 buffer.asByteBuf().refCnt(),
                 buffer.getSize());
-    }
-
-    @Override
-    public void notifyCheckpointComplete(long checkpointID) throws Exception {
-        LOG.debug("Got notified of checkpoint {} completion", checkpointID);
-        List<Long> toRemove = new LinkedList<>();
-        List<Epoch> epochsRemoved = new LinkedList<>();
-
-        synchronized (flushLock) {
-            // keys are in ascending order
-            for (long epochID : slicedLog.keySet())
-                if (epochID < checkpointID) toRemove.add(epochID);
-
-            for (long epochID : toRemove) epochsRemoved.add(slicedLog.remove(epochID));
-
-            for (Epoch epoch : epochsRemoved) epoch.removeEpochFile();
-        }
     }
 
     @Override
@@ -147,32 +124,11 @@ public class SpillableSubpartitionInFlightLogger implements InFlightLog {
     }
 
     @Override
-    public void destroyBufferPools() {
-        if (prefetchBufferPool != null) prefetchBufferPool.lazyDestroy();
-    }
-
-    @Override
     public void close() {
         synchronized (flushLock) {
             this.closed = true;
             for (Epoch e : slicedLog.values()) e.removeEpochFile();
         }
-    }
-
-    @Override
-    public BufferPool getInFlightBufferPool() {
-        return inFlightBufferPool;
-    }
-
-    public void flushAllUnflushed() {
-        synchronized (flushLock) {
-            if (closed) return;
-            for (Epoch e : slicedLog.values()) e.flushAllUnflushed();
-        }
-    }
-
-    public SortedMap<Long, Epoch> getSlicedLog() {
-        return slicedLog;
     }
 
     private void notifyFlushCompleted(long epochID) {
@@ -229,24 +185,6 @@ public class SpillableSubpartitionInFlightLogger implements InFlightLog {
             return writer.getChannelID();
         }
 
-        public long getEpochID() {
-            return epochID;
-        }
-
-        public void flushAllUnflushed() {
-            if (writer.isClosed()) return;
-
-            try {
-                for (; nextBufferToFlush < epochBuffers.size(); nextBufferToFlush++)
-                    writer.writeBlock(epochBuffers.get(nextBufferToFlush));
-
-            } catch (IOException e) {
-                LOG.debug(
-                        "Attempt to write returned exception due to writer being closed. If writer is closed,"
-                                + "that means epoch is stable, no need to write.");
-            }
-        }
-
         public void notifyFlushCompleted() {
             LOG.debug("Notify flush completed");
             Buffer buffer = epochBuffers.get(nextBufferToCompleteFlushing);
@@ -296,10 +234,6 @@ public class SpillableSubpartitionInFlightLogger implements InFlightLog {
                 throw new RuntimeException(
                         "Could not close and delete epoch. Cause: " + e.getMessage());
             }
-        }
-
-        public boolean hasNeverBeenFlushed() {
-            return nextBufferToFlush == 0;
         }
 
         public int getEpochSize() {

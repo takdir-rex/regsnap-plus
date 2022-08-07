@@ -47,9 +47,6 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
     private static final Logger LOG =
             LoggerFactory.getLogger(PipelinedApproximateSubpartition.class);
 
-    @GuardedBy("buffers")
-    private boolean isPartialBufferCleanupRequired = false;
-
     private final InFlightLog inFlightLog = new InMemorySubpartitionInFlightLogger();
 
     @GuardedBy("buffers")
@@ -147,15 +144,6 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
         return readView;
     }
 
-    @Override
-    Buffer buildSliceBuffer(BufferConsumerWithPartialRecordLength buffer) {
-        if (isPartialBufferCleanupRequired) {
-            isPartialBufferCleanupRequired = !buffer.cleanupPartialRecord();
-        }
-
-        return buffer.build();
-    }
-
     private void releaseView() {
         assert Thread.holdsLock(buffers);
         if (readView != null) {
@@ -168,7 +156,6 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             readView.releaseAllResources();
             readView = null;
 
-            isPartialBufferCleanupRequired = true;
             isBlocked = false;
             sequenceNumber = 0;
 
@@ -189,15 +176,4 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
         // to recover channel state
     }
 
-    /** for testing only. */
-    @VisibleForTesting
-    boolean isPartialBufferCleanupRequired() {
-        return isPartialBufferCleanupRequired;
-    }
-
-    /** for testing only. */
-    @VisibleForTesting
-    void setIsPartialBufferCleanupRequired() {
-        isPartialBufferCleanupRequired = true;
-    }
 }

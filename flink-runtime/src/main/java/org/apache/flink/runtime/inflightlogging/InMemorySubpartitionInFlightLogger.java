@@ -38,11 +38,6 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
         slicedLog = new TreeMap<>();
     }
 
-    @Override
-    public void registerBufferPool(BufferPool bufferPool) {
-        this.inFlightBufferPool = bufferPool;
-    }
-
     public synchronized void log(Buffer buffer, long epochID, boolean isFinished) {
         List<Buffer> epochLog =
                 slicedLog.computeIfAbsent(
@@ -52,31 +47,6 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
                         });
         epochLog.add(buffer.retainBuffer());
         //		LOG.debug("Logged a new buffer for epoch {}", epochID);
-    }
-
-    @Override
-    public synchronized void notifyCheckpointComplete(long checkpointId) throws Exception {
-
-        LOG.debug(
-                "Got notified of checkpoint {} completion\nCurrent log: {}",
-                checkpointId,
-                representLogAsString(this.slicedLog));
-        List<Long> toRemove = new LinkedList<>();
-
-        // keys are in ascending order
-        for (long epochId : slicedLog.keySet()) {
-            if (epochId < checkpointId) {
-                toRemove.add(epochId);
-                //				LOG.debug("Removing epoch {}", epochId);
-            }
-        }
-
-        for (long checkpointBarrierId : toRemove) {
-            List<Buffer> slice = slicedLog.remove(checkpointBarrierId);
-            for (Buffer b : slice) {
-                b.recycleBuffer();
-            }
-        }
     }
 
     @Override
@@ -93,22 +63,16 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
     }
 
     @Override
-    public void destroyBufferPools() {}
-
-    @Override
     public synchronized void close() {
         for (List<Buffer> epoch : slicedLog.values()) {
             for (Buffer b : epoch) {
-                b.recycleBuffer();
+                while (!b.isRecycled()){
+                    b.recycleBuffer();
+                }
             }
             epoch.clear();
         }
         slicedLog.clear();
-    }
-
-    @Override
-    public BufferPool getInFlightBufferPool() {
-        return inFlightBufferPool;
     }
 
     private void increaseReferenceCountsUnsafe(Long epochID) {
