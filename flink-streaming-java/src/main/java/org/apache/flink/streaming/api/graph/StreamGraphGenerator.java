@@ -337,13 +337,15 @@ public class StreamGraphGenerator {
         LOG.info("Number of Stream Nodes: {}", streamNodes.size());
         int counter = 0;
         for (StreamNode node : streamNodes) {
-            node.setSlotSharingGroup(UUID.randomUUID().toString()); //assign unique slot name
+            String slotSharing = UUID.randomUUID().toString(); //unique slot name
             for(Integer sgIdx : sgIndexes){
                 if(counter >= sgIdx){
                     node.setSnapshotGroup("snapshot-" + sgIdx);
+                    slotSharing = "snapshot-" + sgIdx;
                     break;
                 }
             }
+            node.setSlotSharingGroup(slotSharing);
             if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
                 for (StreamEdge edge : node.getInEdges()) {
                     edge.setSupportsUnalignedCheckpoints(false);

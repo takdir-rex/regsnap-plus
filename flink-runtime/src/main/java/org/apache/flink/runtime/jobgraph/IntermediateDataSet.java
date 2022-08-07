@@ -22,6 +22,7 @@ import org.apache.flink.runtime.io.network.partition.ResultPartitionType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
@@ -70,7 +71,7 @@ public class IntermediateDataSet implements java.io.Serializable {
     public ResultPartitionType getResultType() {
         String producerSnapshotGroup = producer.getSnapshotGroup();
         for (JobEdge edge : consumers) {
-            if (edge.getTarget().getSnapshotGroup() != producerSnapshotGroup) {
+            if (!Objects.equals(edge.getTarget().getSnapshotGroup(), producerSnapshotGroup)) {
                 return ResultPartitionType.PIPELINED_APPROXIMATE;
             }
         }
