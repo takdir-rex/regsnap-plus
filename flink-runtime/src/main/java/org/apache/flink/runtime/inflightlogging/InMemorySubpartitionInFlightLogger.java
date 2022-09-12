@@ -45,7 +45,7 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
                         k -> {
                             return new LinkedList<>();
                         });
-        epochLog.add(buffer.retainBuffer());
+        epochLog.add(buffer);
         //		LOG.debug("Logged a new buffer for epoch {}", epochID);
     }
 

@@ -19,6 +19,8 @@
 package org.apache.flink.runtime.io.network.partition;
 
 import org.apache.flink.annotation.VisibleForTesting;
+import org.apache.flink.core.memory.MemorySegment;
+import org.apache.flink.core.memory.MemorySegmentFactory;
 import org.apache.flink.runtime.event.AbstractEvent;
 import org.apache.flink.runtime.inflightlogging.InFlightLog;
 import org.apache.flink.runtime.inflightlogging.InFlightLogIterator;
@@ -27,6 +29,11 @@ import org.apache.flink.runtime.io.network.api.CheckpointBarrier;
 import org.apache.flink.runtime.io.network.api.serialization.EventSerializer;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.buffer.BufferConsumerWithPartialRecordLength;
+
+import org.apache.flink.runtime.io.network.buffer.FreeingBufferRecycler;
+import org.apache.flink.runtime.io.network.buffer.NetworkBuffer;
+
+import org.apache.flink.shaded.netty4.io.netty.buffer.ByteBuf;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +61,8 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
 
     private long downstreamCheckpointId = 0;
 
+    private long repliedInFlightLogSIzeCounter = 0;
+
     PipelinedApproximateSubpartition(
             int index, int receiverExclusiveBuffersPerChannel, ResultPartition parent) {
         super(index, receiverExclusiveBuffersPerChannel, parent);
@@ -68,29 +77,41 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             }
         }
         BufferAndBacklog result = super.pollBuffer();
-        if (result != null) {
-            Buffer buffer = result.buffer();
-            if (buffer.getDataType() == Buffer.DataType.EVENT_BUFFER) {
-                Buffer eventBuffer = buffer.retainBuffer();
-                CheckpointBarrier barrier = null;
-                try {
-                    final AbstractEvent event =
-                            EventSerializer.fromBuffer(eventBuffer, getClass().getClassLoader());
-                    barrier = event instanceof CheckpointBarrier ? (CheckpointBarrier) event : null;
-                } catch (IOException e) {
-                    throw new IllegalStateException(
-                            "Should always be able to deserialize in-memory event", e);
-                } finally {
-                    eventBuffer.recycleBuffer();
+        synchronized (buffers) {
+            if (result != null) {
+                Buffer buffer = result.buffer();
+                if (buffer.getDataType() == Buffer.DataType.EVENT_BUFFER) {
+                    Buffer eventBuffer = buffer.retainBuffer();
+                    CheckpointBarrier barrier = null;
+                    try {
+                        final AbstractEvent event =
+                                EventSerializer.fromBuffer(
+                                        eventBuffer,
+                                        getClass().getClassLoader());
+                        barrier = event instanceof CheckpointBarrier ? (CheckpointBarrier) event : null;
+                    } catch (IOException e) {
+                        throw new IllegalStateException(
+                                "Should always be able to deserialize in-memory event", e);
+                    } finally {
+                        eventBuffer.recycleBuffer();
+                    }
+                    if (barrier != null) {
+                        downstreamCheckpointId = barrier.getId();
+                        inFlightLog.close();
+                    }
                 }
-                if (barrier != null) {
-                    downstreamCheckpointId = barrier.getId();
-                    inFlightLog.close();
-                }
-            }
 
-            if (buffer.isBuffer()) {
-                inFlightLog.log(buffer, downstreamCheckpointId, false);
+                if (buffer.isBuffer()) {
+                    ByteBuf nettyByteBuf = buffer.asByteBuf();
+                    byte[] buffBytes = new byte[nettyByteBuf.readableBytes()];
+                    nettyByteBuf.getBytes(nettyByteBuf.readerIndex(), buffBytes);
+                    inFlightLog.log(new NetworkBuffer(
+                            MemorySegmentFactory.wrap(buffBytes),
+                            FreeingBufferRecycler.INSTANCE,
+                            buffer.getDataType(),
+                            buffer.isCompressed(),
+                            buffer.getSize()), downstreamCheckpointId, false);
+                }
             }
         }
         return result;
@@ -102,9 +123,11 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
                 isDataAvailableUnsafe() ? getNextBufferTypeUnsafe() : Buffer.DataType.NONE;
         if (inflightReplayIterator.hasNext()) {
             nextDataType = inflightReplayIterator.peekNext().getDataType();
+            repliedInFlightLogSIzeCounter += buffer.getSize();
         } else {
             inflightReplayIterator = null;
-            LOG.debug("Finished replaying inflight log!");
+            LOG.info("Finished replaying inflight log: {} bytes", repliedInFlightLogSIzeCounter);
+            repliedInFlightLogSIzeCounter = 0;
         }
         return new BufferAndBacklog(
                 buffer,

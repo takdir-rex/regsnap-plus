@@ -345,6 +345,7 @@ public class StreamGraphGenerator {
                     break;
                 }
             }
+            LOG.info("Node {}: {}, SG: {}", counter, node.getOperatorName(), node.getSnapshotGroup());
             node.setSlotSharingGroup(slotSharing);
             if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
                 for (StreamEdge edge : node.getInEdges()) {
@@ -353,6 +354,31 @@ public class StreamGraphGenerator {
             }
             counter++;
         }
+
+        //for q8 nexmark
+//        for (StreamNode node : streamNodes) {
+//            String slotSharing = UUID.randomUUID().toString(); //unique slot name
+//            if(counter >= 2 && counter <= 5){
+//                node.setSnapshotGroup("snapshot-1");
+//                slotSharing = "snapshot-1";
+//            }
+//            if(counter >= 7 && counter <= 10){
+//                node.setSnapshotGroup("snapshot-1");
+//                slotSharing = "snapshot-1";
+//            }
+//            if(counter >= 11){
+//                node.setSnapshotGroup("snapshot-2");
+//                slotSharing = "snapshot-2";
+//            }
+//
+//            node.setSlotSharingGroup(slotSharing);
+//            if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
+//                for (StreamEdge edge : node.getInEdges()) {
+//                    edge.setSupportsUnalignedCheckpoints(false);
+//                }
+//            }
+//            counter++;
+//        }
 
         final StreamGraph builtStreamGraph = streamGraph;
 

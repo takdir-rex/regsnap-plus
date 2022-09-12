@@ -1547,9 +1547,23 @@ public class CheckpointCoordinator {
                     sharedStateRegistry);
 
             String snapshotGroup = null;
-            if (!tasks.isEmpty()) {
-                snapshotGroup = tasks.iterator().next().getJobVertex().getSnapshotGroup();
+            int min = Integer.MAX_VALUE;
+            for (ExecutionJobVertex executionJobVertex : tasks) {
+                String sg = executionJobVertex.getSnapshotGroup();
+                if(sg == null){
+                    snapshotGroup = null;
+                    break;
+                }
+                if(!sg.isEmpty()){
+                    int sgNum = Integer.valueOf(sg.substring(sg.lastIndexOf("-")+1));
+                    if(sgNum < min){
+                        min = sgNum;
+                        snapshotGroup = sg;
+                    }
+                }
             }
+
+            LOG.info("Restoring snapshot group: {}", snapshotGroup);
 
             // Restore from the latest checkpoint
             CompletedCheckpoint latest =
