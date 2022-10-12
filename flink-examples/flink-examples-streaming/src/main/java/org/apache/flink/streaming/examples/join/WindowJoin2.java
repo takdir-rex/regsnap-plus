@@ -69,7 +69,7 @@ public class WindowJoin2 {
 
         Configuration conf = new Configuration();
         conf.setInteger("taskmanager.numberOfTaskSlots", 8);
-        // for testing more than 1 task manager, set ConfigConstants.DEFAULT_LOCAL_NUMBER_TASK_MANAGER
+        conf.setInteger("local.number-taskmanager", 2); // for testing more than 1 task manager
         final File checkpointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "checkpoint");
         final File savepointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "savepoint");
 
