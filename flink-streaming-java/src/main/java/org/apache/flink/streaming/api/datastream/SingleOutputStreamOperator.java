@@ -395,11 +395,11 @@ public class SingleOutputStreamOperator<T> extends DataStream<T> {
     /**
      * Sets the snapshot group of this operation
      *
-     * @param snapshotGroup The snapshot group name
+     * @param snapshotRegion The snapshot group name
      */
     @PublicEvolving
-    public SingleOutputStreamOperator<T> snapshotGroup(String snapshotGroup) {
-        transformation.setSnapshotGroup(snapshotGroup);
+    public SingleOutputStreamOperator<T> snapshotRegion(Integer snapshotRegion) {
+        transformation.setSnapshotRegion(snapshotRegion);
         return this;
     }
 

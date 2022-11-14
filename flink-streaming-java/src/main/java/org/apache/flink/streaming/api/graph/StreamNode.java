@@ -297,8 +297,12 @@ public class StreamNode {
         return slotSharingGroup;
     }
 
-    public void setSnapshotGroup(@Nullable String snapshotGroup) {
-        this.snapshotGroup = snapshotGroup;
+    public void setSnapshotRegion(@Nullable Integer snapshotRegion) {
+        if(snapshotRegion == null){
+            this.snapshotGroup = null;
+        } else {
+            this.snapshotGroup = "snapshot-" + snapshotRegion;
+        }
     }
 
     @Nullable

@@ -234,11 +234,11 @@ public class DataStreamSink<T> {
     /**
      * Sets the snapshot group of this operation
      *
-     * @param snapshotGroup The snapshot group name
+     * @param snapshotRegion The snapshot group name
      */
     @PublicEvolving
-    public DataStreamSink<T> snapshotGroup(String snapshotGroup) {
-        transformation.setSnapshotGroup(snapshotGroup);
+    public DataStreamSink<T> snapshotRegion(Integer snapshotRegion) {
+        transformation.setSnapshotRegion(snapshotRegion);
         return this;
     }
 }

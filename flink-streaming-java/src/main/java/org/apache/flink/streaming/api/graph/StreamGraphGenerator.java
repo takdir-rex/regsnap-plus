@@ -340,7 +340,7 @@ public class StreamGraphGenerator {
             String slotSharing = UUID.randomUUID().toString(); //unique slot name
             for(Integer sgIdx : sgIndexes){
                 if(counter >= sgIdx){
-                    node.setSnapshotGroup("snapshot-" + sgIdx);
+                    node.setSnapshotRegion(sgIdx);
                     slotSharing = "snapshot-" + sgIdx;
                     break;
                 }

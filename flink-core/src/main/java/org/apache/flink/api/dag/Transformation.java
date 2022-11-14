@@ -434,10 +434,14 @@ public abstract class Transformation<T> {
      * Set the snapshot group of this transformation. Parallel instances of operations that are in
      * the same snapshot group will be grouped in the same snapshot region.
      *
-     * @param snapshotGroup the snapshot group name of this transformation
+     * @param snapshotRegion the snapshot group name of this transformation
      */
-    public void setSnapshotGroup(@Nullable String snapshotGroup) {
-        this.snapshotGroup = snapshotGroup;
+    public void setSnapshotRegion(@Nullable Integer snapshotRegion) {
+        if(snapshotRegion == null){
+            this.snapshotGroup = null;
+        } else {
+            this.snapshotGroup = "snapshot-" + snapshotRegion;
+        }
     }
 
     /**
@@ -447,6 +451,13 @@ public abstract class Transformation<T> {
      */
     public String getSnapshotGroup() {
         return this.snapshotGroup;
+    }
+
+    public Integer getSnapshotRegion() {
+        if(this.snapshotGroup == null){
+            return null;
+        }
+        return Integer.valueOf(snapshotGroup.substring(snapshotGroup.lastIndexOf("-") + 1));
     }
 
     /**
