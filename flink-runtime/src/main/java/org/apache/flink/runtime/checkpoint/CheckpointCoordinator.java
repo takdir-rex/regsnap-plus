@@ -1550,13 +1550,13 @@ public class CheckpointCoordinator {
             int min = Integer.MAX_VALUE;
             for (ExecutionJobVertex executionJobVertex : tasks) {
                 String sg = executionJobVertex.getSnapshotGroup();
-                if(sg == null){
+                if (sg == null) {
                     snapshotGroup = null;
                     break;
                 }
-                if(!sg.isEmpty()){
-                    int sgNum = Integer.valueOf(sg.substring(sg.lastIndexOf("-")+1));
-                    if(sgNum < min){
+                if (!sg.isEmpty()) {
+                    int sgNum = Integer.valueOf(sg.substring(sg.lastIndexOf("-") + 1));
+                    if (sgNum < min) {
                         min = sgNum;
                         snapshotGroup = sg;
                     }

@@ -298,7 +298,7 @@ public class StreamNode {
     }
 
     public void setSnapshotRegion(@Nullable Integer snapshotRegion) {
-        if(snapshotRegion == null){
+        if (snapshotRegion == null) {
             this.snapshotGroup = null;
         } else {
             this.snapshotGroup = "snapshot-" + snapshotRegion;

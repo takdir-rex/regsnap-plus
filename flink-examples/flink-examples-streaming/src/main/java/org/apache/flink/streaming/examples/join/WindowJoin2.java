@@ -69,8 +69,20 @@ public class WindowJoin2 {
         Configuration conf = new Configuration();
         conf.setInteger("taskmanager.numberOfTaskSlots", 8);
         conf.setInteger("local.number-taskmanager", 2); // for testing more than 1 task manager
-        final File checkpointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "checkpoint");
-        final File savepointDir = new File(System.getProperty("user.home") + File.separator + "tmp" + File.separator + "savepoint");
+        final File checkpointDir =
+                new File(
+                        System.getProperty("user.home")
+                                + File.separator
+                                + "tmp"
+                                + File.separator
+                                + "checkpoint");
+        final File savepointDir =
+                new File(
+                        System.getProperty("user.home")
+                                + File.separator
+                                + "tmp"
+                                + File.separator
+                                + "savepoint");
 
         conf.setString(StateBackendOptions.STATE_BACKEND, "filesystem");
         conf.setString(
@@ -114,24 +126,36 @@ public class WindowJoin2 {
                         .name("WM salaries")
                         .snapshotRegion(0);
 
-        DataStream<Tuple2<String, Integer>> gradesFordwarder = grades.map(new MapFunction<Tuple2<String, Integer>, Tuple2<String, Integer>>() {
+        DataStream<Tuple2<String, Integer>> gradesFordwarder =
+                grades.map(
+                                new MapFunction<
+                                        Tuple2<String, Integer>, Tuple2<String, Integer>>() {
 
-            @Override
-            public Tuple2<String, Integer> map(Tuple2<String, Integer> value) throws Exception {
-                if(Calendar.getInstance().get(Calendar.SECOND) == 0){
-                    //throw new Exception("Simulate failed");
-                }
-                return value;
-            }
-        }).setParallelism(1).snapshotRegion(1);
+                                    @Override
+                                    public Tuple2<String, Integer> map(
+                                            Tuple2<String, Integer> value) throws Exception {
+                                        if (Calendar.getInstance().get(Calendar.SECOND) == 0) {
+                                            // throw new Exception("Simulate failed");
+                                        }
+                                        return value;
+                                    }
+                                })
+                        .setParallelism(1)
+                        .snapshotRegion(1);
 
-        DataStream<Tuple2<String, Integer>> salariesFordwarder = salaries.map(new MapFunction<Tuple2<String, Integer>, Tuple2<String, Integer>>() {
+        DataStream<Tuple2<String, Integer>> salariesFordwarder =
+                salaries.map(
+                                new MapFunction<
+                                        Tuple2<String, Integer>, Tuple2<String, Integer>>() {
 
-            @Override
-            public Tuple2<String, Integer> map(Tuple2<String, Integer> value) throws Exception {
-                return value;
-            }
-        }).setParallelism(1).snapshotRegion(1);
+                                    @Override
+                                    public Tuple2<String, Integer> map(
+                                            Tuple2<String, Integer> value) throws Exception {
+                                        return value;
+                                    }
+                                })
+                        .setParallelism(1)
+                        .snapshotRegion(1);
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
@@ -141,21 +165,28 @@ public class WindowJoin2 {
         ((SingleOutputStreamOperator) joinedStream)
                 .uid("join")
                 .name("Join")
-                .snapshotRegion(1).setParallelism(1);
+                .snapshotRegion(1)
+                .setParallelism(1);
 
-//        DataStream<Tuple3<String, Integer, Integer>> joinedStream2 =
-//                runWindowJoin(grades, salaries, windowSize);
-//
-//        ((SingleOutputStreamOperator) joinedStream2)
-//                .uid("join1")
-//                .name("Join2")
-//                .snapshotGroup("snapshot-2");
+        //        DataStream<Tuple3<String, Integer, Integer>> joinedStream2 =
+        //                runWindowJoin(grades, salaries, windowSize);
+        //
+        //        ((SingleOutputStreamOperator) joinedStream2)
+        //                .uid("join1")
+        //                .name("Join2")
+        //                .snapshotGroup("snapshot-2");
 
         // print the results with a single thread, rather than in parallel
-        joinedStream.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink").name("Sink").snapshotRegion(2);
-//        joinedStream2.addSink(new DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
+        joinedStream
+                .addSink(new DiscardingSink<>())
+                .setParallelism(1)
+                .uid("Sink")
+                .name("Sink")
+                .snapshotRegion(2);
+        //        joinedStream2.addSink(new
+        // DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
 
-//                System.out.println(env.getExecutionPlan());
+        //                System.out.println(env.getExecutionPlan());
 
         // execute program
         env.execute("Windowed Join Example");

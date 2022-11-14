@@ -437,7 +437,7 @@ public abstract class Transformation<T> {
      * @param snapshotRegion the snapshot group name of this transformation
      */
     public void setSnapshotRegion(@Nullable Integer snapshotRegion) {
-        if(snapshotRegion == null){
+        if (snapshotRegion == null) {
             this.snapshotGroup = null;
         } else {
             this.snapshotGroup = "snapshot-" + snapshotRegion;
@@ -454,7 +454,7 @@ public abstract class Transformation<T> {
     }
 
     public Integer getSnapshotRegion() {
-        if(this.snapshotGroup == null){
+        if (this.snapshotGroup == null) {
             return null;
         }
         return Integer.valueOf(snapshotGroup.substring(snapshotGroup.lastIndexOf("-") + 1));

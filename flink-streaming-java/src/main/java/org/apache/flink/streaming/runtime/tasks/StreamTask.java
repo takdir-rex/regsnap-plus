@@ -1272,10 +1272,11 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
         FlinkSecurityManager.monitorUserSystemExitForCurrentThread();
         try {
-            if (environment
-                    .getJobVertex().isInputVertex() && Objects.equals(
-                    environment.getJobVertex().getSnapshotGroup(),
-                    checkpointOptions.getSnapshotGroup())) { //source is included in snapshot group
+            if (environment.getJobVertex().isInputVertex()
+                    && Objects.equals(
+                            environment.getJobVertex().getSnapshotGroup(),
+                            checkpointOptions
+                                    .getSnapshotGroup())) { // source is included in snapshot group
                 if (performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics)) {
                     if (isCurrentSavepointWithoutDrain(checkpointMetaData.getCheckpointId())) {
                         runSynchronousSavepointMailboxLoop();
@@ -1283,7 +1284,8 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
                 }
             } else if (environment
                     .getJobVertex()
-                    .isDirectUpstreamOfSnapshotGroup(checkpointOptions.getSnapshotGroup())) { //a direct upstream
+                    .isDirectUpstreamOfSnapshotGroup(
+                            checkpointOptions.getSnapshotGroup())) { // a direct upstream
                 // only send checkpoint barrier without recording own snapshot
                 sendCheckpointBarrier(checkpointMetaData, checkpointOptions);
             } else {
