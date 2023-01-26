@@ -178,11 +178,11 @@ public class WindowJoin2 {
 
         // print the results with a single thread, rather than in parallel
         joinedStream
-                .addSink(new DiscardingSink<>())
+                .addSink(new FailingSink<>())
                 .setParallelism(1)
                 .uid("Sink")
                 .name("Sink")
-                .snapshotRegion(2);
+                .snapshotRegion(1);
         //        joinedStream2.addSink(new
         // DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
 

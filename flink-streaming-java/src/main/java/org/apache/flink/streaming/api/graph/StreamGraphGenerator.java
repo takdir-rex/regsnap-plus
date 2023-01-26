@@ -324,28 +324,31 @@ public class StreamGraphGenerator {
         Configuration config = (Configuration) configuration;
         Map<Integer, Integer> sgMap = new HashMap<>(); // index --> region
         String sgsString = config.getString("g", "");
-        // Parameter format: <region1>:<idx0>,<idx1>;<region2>:<idx2>,<idx3>
-        for (String sg : sgsString.split(";")) {
-            String[] sgEl = sg.split(":");
-            Integer region = Integer.valueOf(sgEl[0]);
-            for (String idx : sgEl[1].split(",")) {
-                sgMap.put(Integer.valueOf(idx), region);
+        if(!sgsString.isEmpty()){
+            // Parameter format: <region1>:<idx0>,<idx1>;<region2>:<idx2>,<idx3>
+            for (String sg : sgsString.split(";")) {
+                String[] sgEl = sg.split(":");
+                Integer region = Integer.valueOf(sgEl[0]);
+                for (String idx : sgEl[1].split(",")) {
+                    sgMap.put(Integer.valueOf(idx), region);
+                }
             }
+            LOG.info("Snapshot Groups Indexes: {}", sgMap);
         }
-
-        LOG.info("Snapshot Groups Indexes: {}", sgMap);
 
         Collection<StreamNode> streamNodes = streamGraph.getStreamNodes();
         LOG.info("Number of Stream Nodes: {}", streamNodes.size());
         Integer counter = 0;
         for (StreamNode node : streamNodes) {
-            String slotSharing = "slot-" + sgMap.get(counter);
-            node.setSnapshotRegion(sgMap.get(counter));
+            if(node.getSnapshotGroup() == null && !sgMap.isEmpty()){
+                node.setSnapshotRegion(sgMap.get(counter));
+            }
             LOG.info(
-                    "Node {}: {}, SG: {}",
-                    counter,
-                    node.getOperatorName(),
-                    node.getSnapshotGroup());
+                "Node {}: {}, SG: {}",
+                counter,
+                node.getOperatorName(),
+                node.getSnapshotGroup());
+            String slotSharing = "slot-" + sgMap.get(counter);
             node.setSlotSharingGroup(slotSharing);
             if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
                 for (StreamEdge edge : node.getInEdges()) {
