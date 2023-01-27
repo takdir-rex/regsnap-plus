@@ -306,6 +306,14 @@ public class StreamNode {
     }
 
     @Nullable
+    public Integer getSnapshotRegion() {
+        if(this.snapshotGroup != null){
+            return Integer.valueOf(this.snapshotGroup.substring("snapshot-".length()));
+        }
+        return null;
+    }
+
+    @Nullable
     public String getSnapshotGroup() {
         return snapshotGroup;
     }

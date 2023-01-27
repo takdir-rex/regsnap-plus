@@ -28,6 +28,7 @@ import org.apache.flink.api.common.operators.util.SlotSharingGroupUtils;
 import org.apache.flink.api.connector.source.Boundedness;
 import org.apache.flink.api.dag.Transformation;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.ClusterOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ExecutionOptions;
@@ -322,40 +323,71 @@ public class StreamGraphGenerator {
 
         // load user provided snapshot group config
         Configuration config = (Configuration) configuration;
-        Map<Integer, Integer> sgMap = new HashMap<>(); // index --> region
-        String sgsString = config.getString("g", "");
-        if(!sgsString.isEmpty()){
-            // Parameter format: <region1>:<idx0>,<idx1>;<region2>:<idx2>,<idx3>
-            for (String sg : sgsString.split(";")) {
-                String[] sgEl = sg.split(":");
-                Integer region = Integer.valueOf(sgEl[0]);
-                for (String idx : sgEl[1].split(",")) {
-                    sgMap.put(Integer.valueOf(idx), region);
-                }
-            }
-            LOG.info("Snapshot Groups Indexes: {}", sgMap);
-        }
 
         Collection<StreamNode> streamNodes = streamGraph.getStreamNodes();
         LOG.info("Number of Stream Nodes: {}", streamNodes.size());
-        Integer counter = 0;
-        for (StreamNode node : streamNodes) {
-            if(node.getSnapshotGroup() == null && !sgMap.isEmpty()){
-                node.setSnapshotRegion(sgMap.get(counter));
-            }
-            LOG.info(
-                "Node {}: {}, SG: {}",
-                counter,
-                node.getOperatorName(),
-                node.getSnapshotGroup());
-            String slotSharing = "slot-" + sgMap.get(counter);
-            node.setSlotSharingGroup(slotSharing);
-            if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
-                for (StreamEdge edge : node.getInEdges()) {
-                    edge.setSupportsUnalignedCheckpoints(false);
+
+        if(config.getInteger(CheckpointingOptions.MAX_GENERATED_SNAPSHOT_REGIONS) > 0){
+
+//            Integer counter = 0;
+//            for (StreamNode node : streamNodes) {
+//                if (node.getSnapshotGroup() == null && !sgMap.isEmpty()) {
+//                    node.setSnapshotRegion(sgMap.get(counter));
+//                }
+//                LOG.info(
+//                        "Node {}: {}, SG: {}",
+//                        counter,
+//                        node.getOperatorName(),
+//                        node.getSnapshotGroup());
+//                String slotSharing = "slot-" + sgMap.get(counter);
+//                node.setSlotSharingGroup(slotSharing);
+//                if (node
+//                        .getInEdges()
+//                        .stream()
+//                        .anyMatch(this::shouldDisableUnalignedCheckpointing)) {
+//                    for (StreamEdge edge : node.getInEdges()) {
+//                        edge.setSupportsUnalignedCheckpoints(false);
+//                    }
+//                }
+//                counter++;
+//            }
+        } else {
+            Map<Integer, Integer> sgMap = new HashMap<>(); // index --> region
+            String sgsString = config.getString("g", "");
+            if (!sgsString.isEmpty()) {
+                // Parameter format: <region1>:<idx0>,<idx1>;<region2>:<idx2>,<idx3>
+                for (String sg : sgsString.split(";")) {
+                    String[] sgEl = sg.split(":");
+                    Integer region = Integer.valueOf(sgEl[0]);
+                    for (String idx : sgEl[1].split(",")) {
+                        sgMap.put(Integer.valueOf(idx), region);
+                    }
                 }
+                LOG.info("Snapshot Groups Indexes: {}", sgMap);
             }
-            counter++;
+
+            Integer counter = 0;
+            for (StreamNode node : streamNodes) {
+                if (node.getSnapshotGroup() == null && !sgMap.isEmpty()) {
+                    node.setSnapshotRegion(sgMap.get(counter));
+                }
+                LOG.info(
+                        "Node {}: {}, SG: {}",
+                        counter,
+                        node.getOperatorName(),
+                        node.getSnapshotRegion());
+                String slotSharing = "slot-" + node.getSnapshotRegion();
+                node.setSlotSharingGroup(slotSharing);
+                if (node
+                        .getInEdges()
+                        .stream()
+                        .anyMatch(this::shouldDisableUnalignedCheckpointing)) {
+                    for (StreamEdge edge : node.getInEdges()) {
+                        edge.setSupportsUnalignedCheckpoints(false);
+                    }
+                }
+                counter++;
+            }
         }
 
         final StreamGraph builtStreamGraph = streamGraph;

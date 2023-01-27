@@ -89,6 +89,9 @@ public class WindowJoin2 {
                 CheckpointingOptions.CHECKPOINTS_DIRECTORY, checkpointDir.toURI().toString());
         conf.setString(CheckpointingOptions.SAVEPOINT_DIRECTORY, savepointDir.toURI().toString());
 
+        conf.setBoolean(CheckpointingOptions.TASK_INSTANCE_RECOVERY, true); //additional custom config
+        conf.setInteger(CheckpointingOptions.MAX_GENERATED_SNAPSHOT_REGIONS,0); //additional custom config
+
         // obtain execution environment, run this example in "ingestion time"
         StreamExecutionEnvironment env =
                 StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(conf);
@@ -106,7 +109,7 @@ public class WindowJoin2 {
         env.getCheckpointConfig()
                 .setMaxConcurrentCheckpoints(Integer.MAX_VALUE); // as much as possible
 
-        env.disableOperatorChaining();
+//        env.disableOperatorChaining();
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 5000));
 
         //                env.enableCheckpointing(2000);
@@ -118,55 +121,57 @@ public class WindowJoin2 {
                 GradeSource.getSource(env, rate)
                         .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create())
                         .name("WM grades")
-                        .snapshotRegion(0);
+                        .setParallelism(1)
+                        .snapshotRegion(1);
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)
                         .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create())
                         .name("WM salaries")
-                        .snapshotRegion(0);
-
-        DataStream<Tuple2<String, Integer>> gradesFordwarder =
-                grades.map(
-                                new MapFunction<
-                                        Tuple2<String, Integer>, Tuple2<String, Integer>>() {
-
-                                    @Override
-                                    public Tuple2<String, Integer> map(
-                                            Tuple2<String, Integer> value) throws Exception {
-                                        if (Calendar.getInstance().get(Calendar.SECOND) == 0) {
-                                            // throw new Exception("Simulate failed");
-                                        }
-                                        return value;
-                                    }
-                                })
                         .setParallelism(1)
                         .snapshotRegion(1);
 
-        DataStream<Tuple2<String, Integer>> salariesFordwarder =
-                salaries.map(
-                                new MapFunction<
-                                        Tuple2<String, Integer>, Tuple2<String, Integer>>() {
-
-                                    @Override
-                                    public Tuple2<String, Integer> map(
-                                            Tuple2<String, Integer> value) throws Exception {
-                                        return value;
-                                    }
-                                })
-                        .setParallelism(1)
-                        .snapshotRegion(1);
+//        DataStream<Tuple2<String, Integer>> gradesFordwarder =
+//                grades.map(
+//                                new MapFunction<
+//                                        Tuple2<String, Integer>, Tuple2<String, Integer>>() {
+//
+//                                    @Override
+//                                    public Tuple2<String, Integer> map(
+//                                            Tuple2<String, Integer> value) throws Exception {
+//                                        if (Calendar.getInstance().get(Calendar.SECOND) == 0) {
+//                                            // throw new Exception("Simulate failed");
+//                                        }
+//                                        return value;
+//                                    }
+//                                })
+//                        .setParallelism(1)
+//                        .snapshotRegion(1);
+//
+//        DataStream<Tuple2<String, Integer>> salariesFordwarder =
+//                salaries.map(
+//                                new MapFunction<
+//                                        Tuple2<String, Integer>, Tuple2<String, Integer>>() {
+//
+//                                    @Override
+//                                    public Tuple2<String, Integer> map(
+//                                            Tuple2<String, Integer> value) throws Exception {
+//                                        return value;
+//                                    }
+//                                })
+//                        .setParallelism(1)
+//                        .snapshotRegion(1);
 
         // run the actual window join program
         // for testability, this functionality is in a separate method.
         DataStream<Tuple3<String, Integer, Integer>> joinedStream =
-                runWindowJoin(gradesFordwarder, salariesFordwarder, windowSize);
+                runWindowJoin(grades, salaries, windowSize);
 
         ((SingleOutputStreamOperator) joinedStream)
                 .uid("join")
                 .name("Join")
-                .snapshotRegion(1)
-                .setParallelism(1);
+                .setParallelism(1)
+                .snapshotRegion(2);
 
         //        DataStream<Tuple3<String, Integer, Integer>> joinedStream2 =
         //                runWindowJoin(grades, salaries, windowSize);
@@ -178,13 +183,30 @@ public class WindowJoin2 {
 
         // print the results with a single thread, rather than in parallel
         joinedStream
-                .addSink(new FailingSink<>())
-                .setParallelism(1)
+                .addSink(new DiscardingSink<>())
                 .uid("Sink")
                 .name("Sink")
-                .snapshotRegion(1);
-        //        joinedStream2.addSink(new
-        // DiscardingSink<>()).setParallelism(1).uid("Sink2").name("Sink2").snapshotGroup("snapshot-2");
+                .setParallelism(1)
+                .snapshotRegion(2);
+
+        DataStream<Tuple3<String, Integer, Integer>> fwJoin = joinedStream.map(
+                                new MapFunction<
+                                        Tuple3<String, Integer, Integer>, Tuple3<String, Integer, Integer>>() {
+                                    @Override
+                                    public Tuple3<String, Integer, Integer> map(
+                                            Tuple3<String, Integer, Integer> value) throws Exception {
+                                        return value;
+                                    }
+                                })
+                .name("FW Join")
+                .setParallelism(1)
+                .snapshotRegion(3);
+
+        fwJoin.addSink(new
+                DiscardingSink<>()).uid("Sink2")
+                .name("Sink2")
+                .setParallelism(1)
+                .snapshotRegion(3);
 
         //                System.out.println(env.getExecutionPlan());
 
