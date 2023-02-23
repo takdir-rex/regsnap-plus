@@ -90,7 +90,6 @@ public class WindowJoin2 {
         conf.setString(CheckpointingOptions.SAVEPOINT_DIRECTORY, savepointDir.toURI().toString());
 
         conf.setBoolean(CheckpointingOptions.TASK_INSTANCE_RECOVERY, true); //additional custom config
-        conf.setInteger(CheckpointingOptions.MAX_GENERATED_SNAPSHOT_REGIONS,0); //additional custom config
 
         // obtain execution environment, run this example in "ingestion time"
         StreamExecutionEnvironment env =
@@ -121,15 +120,13 @@ public class WindowJoin2 {
                 GradeSource.getSource(env, rate)
                         .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create())
                         .name("WM grades")
-                        .setParallelism(1)
-                        .snapshotRegion(1);
+                        .setParallelism(1);
 
         DataStream<Tuple2<String, Integer>> salaries =
                 SalarySource.getSource(env, rate)
                         .assignTimestampsAndWatermarks(IngestionTimeWatermarkStrategy.create())
                         .name("WM salaries")
-                        .setParallelism(1)
-                        .snapshotRegion(1);
+                        .setParallelism(1);
 
 //        DataStream<Tuple2<String, Integer>> gradesFordwarder =
 //                grades.map(
@@ -171,7 +168,7 @@ public class WindowJoin2 {
                 .uid("join")
                 .name("Join")
                 .setParallelism(1)
-                .snapshotRegion(2);
+                .snapshotRegion(1);
 
         //        DataStream<Tuple3<String, Integer, Integer>> joinedStream2 =
         //                runWindowJoin(grades, salaries, windowSize);
@@ -187,7 +184,7 @@ public class WindowJoin2 {
                 .uid("Sink")
                 .name("Sink")
                 .setParallelism(1)
-                .snapshotRegion(2);
+                .snapshotRegion(1);
 
         DataStream<Tuple3<String, Integer, Integer>> fwJoin = joinedStream.map(
                                 new MapFunction<
@@ -199,14 +196,14 @@ public class WindowJoin2 {
                                     }
                                 })
                 .name("FW Join")
-                .setParallelism(1)
-                .snapshotRegion(3);
+                .setParallelism(2)
+                .snapshotRegion(2);
 
         fwJoin.addSink(new
-                DiscardingSink<>()).uid("Sink2")
+                        FailingSink<>()).uid("Sink2")
                 .name("Sink2")
-                .setParallelism(1)
-                .snapshotRegion(3);
+                .setParallelism(2)
+                .snapshotRegion(2);
 
         //                System.out.println(env.getExecutionPlan());
 

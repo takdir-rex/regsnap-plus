@@ -61,6 +61,8 @@ public class PipelinedRegionSchedulingStrategy implements SchedulingStrategy {
     private final Set<ConsumedPartitionGroup> crossRegionConsumedPartitionGroups =
             Collections.newSetFromMap(new IdentityHashMap<>());
 
+    private Set<ExecutionVertexID> verticesToRestart = null;
+
     public PipelinedRegionSchedulingStrategy(
             final SchedulerOperations schedulerOperations,
             final SchedulingTopology schedulingTopology) {
@@ -163,6 +165,7 @@ public class PipelinedRegionSchedulingStrategy implements SchedulingStrategy {
 
     @Override
     public void restartTasks(final Set<ExecutionVertexID> verticesToRestart) {
+        this.verticesToRestart = verticesToRestart;
         final Set<SchedulingPipelinedRegion> regionsToRestart =
                 verticesToRestart.stream()
                         .map(schedulingTopology::getPipelinedRegionOfVertex)
@@ -228,9 +231,24 @@ public class PipelinedRegionSchedulingStrategy implements SchedulingStrategy {
                 areRegionVerticesAllInCreatedState(region),
                 "BUG: trying to schedule a region which is not in CREATED state");
 
+        //only restart vertices that are connected with the failed vertex
+        List<ExecutionVertexID> restartedVertices = new ArrayList<>();
+        if(verticesToRestart == null){
+            for (ExecutionVertexID vertexID : regionVerticesSorted.get(region)){
+                restartedVertices.add(vertexID);
+            }
+        } else {
+            for (ExecutionVertexID vertexID : regionVerticesSorted.get(region)){
+                if(verticesToRestart.contains(vertexID)){
+                    restartedVertices.add(vertexID);
+                }
+            }
+            verticesToRestart = null;
+        }
+
         final List<ExecutionVertexDeploymentOption> vertexDeploymentOptions =
                 SchedulingStrategyUtils.createExecutionVertexDeploymentOptions(
-                        regionVerticesSorted.get(region), id -> deploymentOption);
+                        restartedVertices, id -> deploymentOption);
         schedulerOperations.allocateSlotsAndDeploy(vertexDeploymentOptions);
     }
 

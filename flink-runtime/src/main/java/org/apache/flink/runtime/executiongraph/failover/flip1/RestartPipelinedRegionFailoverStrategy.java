@@ -135,10 +135,46 @@ public class RestartPipelinedRegionFailoverStrategy implements FailoverStrategy 
         // calculate the tasks to restart based on the result of regions to restart
         Set<ExecutionVertexID> tasksToRestart = new HashSet<>();
         for (SchedulingPipelinedRegion region : getRegionsToRestart(failedRegion)) {
-            for (SchedulingExecutionVertex vertex : region.getVertices()) {
-                // we do not need to restart tasks which are already in the initial state
-                if (vertex.getState() != ExecutionState.CREATED) {
-                    tasksToRestart.add(vertex.getId());
+            if(region == failedRegion){
+                //only restart pipelined operator instances
+                SchedulingExecutionVertex failedVertex = failedRegion.getVertex(executionVertexId);
+                for (SchedulingExecutionVertex vertex : failedRegion.getVertices()) {
+                    if (vertex.getState() != ExecutionState.CREATED) {
+                        if (vertex == failedVertex) {
+                            tasksToRestart.add(vertex.getId());
+                        } else {
+                            //must be connected with failed vertex
+                            List<SchedulingExecutionVertex> queue = new ArrayList<>();
+                            queue.add(failedVertex);
+                            //iterate upstreams
+                            while (!queue.isEmpty()){
+                                for (SchedulingResultPartition resultPartition : queue.remove(0).getConsumedResults()) {
+                                    SchedulingExecutionVertex producer = resultPartition.getProducer();
+                                    tasksToRestart.add(vertex.getId());
+                                    queue.add(producer);
+                                }
+                            }
+                            //iterate downstreams
+                            queue.add(failedVertex);
+                            while (!queue.isEmpty()){
+                                for (SchedulingResultPartition resultPartition : queue.remove(0).getProducedResults()) {
+                                    for (SchedulingExecutionVertex consumer : resultPartition.getConsumers()) {
+                                        if(vertex == consumer){
+                                            tasksToRestart.add(vertex.getId());
+                                        }
+                                        queue.add(consumer);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (SchedulingExecutionVertex vertex : region.getVertices()) {
+                    // we do not need to restart tasks which are already in the initial state
+                    if (vertex.getState() != ExecutionState.CREATED) {
+                        tasksToRestart.add(vertex.getId());
+                    }
                 }
             }
         }
