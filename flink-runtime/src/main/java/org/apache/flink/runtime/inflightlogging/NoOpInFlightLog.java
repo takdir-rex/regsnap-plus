@@ -39,4 +39,9 @@ public class NoOpInFlightLog implements InFlightLog {
 
     @Override
     public void close() {}
+
+    @Override
+    public void prune(long epochID) {
+
+    }
 }

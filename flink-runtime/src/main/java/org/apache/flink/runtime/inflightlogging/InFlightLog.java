@@ -40,4 +40,6 @@ public interface InFlightLog {
     InFlightLogIterator<Buffer> getInFlightIterator(long epochID, int ignoreBuffers);
 
     void close();
+
+    void prune(long epochID);
 }

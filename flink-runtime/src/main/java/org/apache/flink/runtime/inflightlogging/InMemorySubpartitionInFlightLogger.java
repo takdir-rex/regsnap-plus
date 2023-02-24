@@ -75,6 +75,29 @@ public class InMemorySubpartitionInFlightLogger implements InFlightLog {
         slicedLog.clear();
     }
 
+    @Override
+    public synchronized void prune(long epochID) {
+        slicedLog.headMap(epochID).values().forEach(buffers -> {
+            for (Buffer b : buffers) {
+                while (!b.isRecycled()) {
+                    b.recycleBuffer();
+                }
+            }
+            buffers.clear();
+        });
+
+        slicedLog.headMap(epochID).forEach((id, buffers) -> {
+            for (Buffer b : buffers) {
+                while (!b.isRecycled()) {
+                    b.recycleBuffer();
+                }
+            }
+            buffers.clear();
+            slicedLog.remove(id);
+            LOG.debug("CheckpointId {} was pruned from inflight logs", id);
+        });
+    }
+
     private void increaseReferenceCountsUnsafe(Long epochID) {
         for (List<Buffer> epoch : slicedLog.tailMap(epochID).values())
             for (Buffer buffer : epoch) buffer.retainBuffer();

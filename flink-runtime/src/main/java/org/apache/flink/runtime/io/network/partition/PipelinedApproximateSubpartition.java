@@ -55,7 +55,9 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
     @GuardedBy("buffers")
     private InFlightLogIterator<Buffer> inflightReplayIterator;
 
-    private long downstreamCheckpointId = 0;
+    private long currentRecordedEpoch = 0;
+
+    private long repliedEpoch = 0;
 
     private long repliedInFlightLogSIzeCounter = 0;
 
@@ -94,8 +96,8 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
                         eventBuffer.recycleBuffer();
                     }
                     if (barrier != null) {
-                        downstreamCheckpointId = barrier.getId();
-                        inFlightLog.close();
+                        currentRecordedEpoch = barrier.getId();
+                        repliedEpoch = currentRecordedEpoch;
                     }
                 }
 
@@ -110,12 +112,17 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
                                     buffer.getDataType(),
                                     buffer.isCompressed(),
                                     buffer.getSize()),
-                            downstreamCheckpointId,
+                            currentRecordedEpoch,
                             false);
                 }
             }
         }
         return result;
+    }
+
+    public void pruneInflightLog(long checkpointId){
+        LOG.debug("{} Pruning inflight log: {}", parent.getOwningTaskName(), checkpointId);
+        inFlightLog.prune(checkpointId);
     }
 
     private BufferAndBacklog getReplayedBufferUnsafe() {
@@ -127,7 +134,7 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             repliedInFlightLogSIzeCounter += buffer.getSize();
         } else {
             inflightReplayIterator = null;
-            LOG.info("Finished replaying inflight log: {} bytes", repliedInFlightLogSIzeCounter);
+            LOG.info("{} Finished replaying inflight log: {} bytes", parent.getOwningTaskName(), repliedInFlightLogSIzeCounter);
             repliedInFlightLogSIzeCounter = 0;
         }
         return new BufferAndBacklog(
@@ -173,7 +180,8 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
         if (readView != null) {
             // upon reconnecting, two netty threads may require the same view to release
             LOG.debug(
-                    "Releasing view of subpartition {} of {}.",
+                    "{} Releasing view of subpartition {} of {}.",
+                    parent.getOwningTaskName(),
                     getSubPartitionIndex(),
                     parent.getPartitionId());
 
@@ -187,10 +195,11 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             if (inflightReplayIterator != null) {
                 inflightReplayIterator.close();
             }
-            inflightReplayIterator = inFlightLog.getInFlightIterator(downstreamCheckpointId, 0);
+            inflightReplayIterator = inFlightLog.getInFlightIterator(repliedEpoch, 0);
             if (inflightReplayIterator != null) {
                 if (!inflightReplayIterator.hasNext()) inflightReplayIterator = null;
             }
+            repliedEpoch = currentRecordedEpoch;
         }
     }
 
@@ -198,5 +207,9 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
     public void finishReadRecoveredState(boolean notifyAndBlockOnCompletion) throws IOException {
         // The Approximate Local Recovery can not work with unaligned checkpoint for now, so no need
         // to recover channel state
+    }
+
+    public void setRepliedEpoch(long repliedEpoch) {
+        this.repliedEpoch = repliedEpoch;
     }
 }

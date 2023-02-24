@@ -981,7 +981,13 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
         final Task task = taskSlotTable.getTask(executionAttemptID);
 
         if (task != null) {
-            task.notifyCheckpointComplete(checkpointId);
+            if(checkpointTimestamp == -1){
+                task.pruneInflightLog(checkpointId);
+            } else if(checkpointTimestamp == -2){
+                task.setRepliedInfligtLogEpoch(checkpointId);
+            } else {
+                task.notifyCheckpointComplete(checkpointId);
+            }
 
             return CompletableFuture.completedFuture(Acknowledge.get());
         } else {

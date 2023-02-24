@@ -131,6 +131,13 @@ public class SpillableSubpartitionInFlightLogger implements InFlightLog {
         }
     }
 
+    @Override
+    public void prune(long epochID) {
+        synchronized (flushLock) {
+            slicedLog.remove(epochID).removeEpochFile();
+        }
+    }
+
     private void notifyFlushCompleted(long epochID) {
         synchronized (flushLock) {
             Epoch epoch = slicedLog.get(epochID);

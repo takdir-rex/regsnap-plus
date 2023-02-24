@@ -52,8 +52,11 @@ import org.apache.flink.runtime.io.network.NettyShuffleEnvironment;
 import org.apache.flink.runtime.io.network.TaskEventDispatcher;
 import org.apache.flink.runtime.io.network.api.writer.ResultPartitionWriter;
 import org.apache.flink.runtime.io.network.partition.PartitionProducerStateProvider;
+import org.apache.flink.runtime.io.network.partition.PipelinedApproximateSubpartition;
+import org.apache.flink.runtime.io.network.partition.PipelinedResultPartition;
 import org.apache.flink.runtime.io.network.partition.ResultPartitionConsumableNotifier;
 import org.apache.flink.runtime.io.network.partition.ResultPartitionID;
+import org.apache.flink.runtime.io.network.partition.ResultSubpartition;
 import org.apache.flink.runtime.io.network.partition.consumer.IndexedInputGate;
 import org.apache.flink.runtime.io.network.partition.consumer.InputGate;
 import org.apache.flink.runtime.jobgraph.IntermediateDataSetID;
@@ -1402,7 +1405,40 @@ public class Task
                         failureCause));
     }
 
-    public void notifyCheckpointComplete(final long checkpointID) {
+    public void pruneInflightLog(final long epochID){
+        for(ResultPartitionWriter writer : consumableNotifyingPartitionWriters){
+            if(writer instanceof PipelinedResultPartition){
+                PipelinedResultPartition resultPartition = (PipelinedResultPartition) writer;
+                for(ResultSubpartition subpartition : resultPartition.getAllPartitions()){
+                    if(subpartition instanceof PipelinedApproximateSubpartition){
+                        PipelinedApproximateSubpartition approximateSubpartition = (PipelinedApproximateSubpartition) subpartition;
+                        approximateSubpartition.pruneInflightLog(epochID);
+                    }
+                }
+            }
+        }
+    }
+
+    public void setRepliedInfligtLogEpoch(long checkpointID){
+        for(ResultPartitionWriter writer : consumableNotifyingPartitionWriters){
+            if(writer instanceof PipelinedResultPartition){
+                PipelinedResultPartition resultPartition = (PipelinedResultPartition) writer;
+                for(ResultSubpartition subpartition : resultPartition.getAllPartitions()){
+                    if(subpartition instanceof PipelinedApproximateSubpartition){
+                        PipelinedApproximateSubpartition approximateSubpartition = (PipelinedApproximateSubpartition) subpartition;
+                        approximateSubpartition.setRepliedEpoch(checkpointID);
+                        LOG.info(
+                                "{} partition {} setRepliedEpoch: {}",
+                                taskNameWithSubtask,
+                                approximateSubpartition.getSubPartitionIndex(),
+                                checkpointID);
+                    }
+                }
+            }
+        }
+    }
+
+    public void notifyCheckpointComplete(long checkpointID) {
         final TaskInvokable invokable = this.invokable;
 
         if (executionState == ExecutionState.RUNNING) {

@@ -27,6 +27,8 @@ import org.apache.flink.runtime.executiongraph.Execution;
 import org.apache.flink.runtime.executiongraph.ExecutionAttemptID;
 import org.apache.flink.runtime.executiongraph.ExecutionJobVertex;
 import org.apache.flink.runtime.executiongraph.ExecutionVertex;
+import org.apache.flink.runtime.executiongraph.IntermediateResult;
+import org.apache.flink.runtime.executiongraph.IntermediateResultPartition;
 import org.apache.flink.runtime.executiongraph.JobStatusListener;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.jobgraph.OperatorID;
@@ -82,6 +84,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
@@ -1315,11 +1318,24 @@ public class CheckpointCoordinator {
             LOG.debug(builder.toString());
         }
 
-        // send the "notify complete" call to all vertices, coordinators, etc.
         sendAcknowledgeMessages(
                 pendingCheckpoint.getCheckpointPlan().getTasksToCommitTo(),
                 checkpointId,
                 completedCheckpoint.getTimestamp());
+
+        if(pendingCheckpoint.getCheckpointPlan().getTasksToTrigger().get(0).getVertex().getJobVertex().getSnapshotGroup() == null){
+            // send the "notify complete" call to all snapshot group members. make the checkpointId minus (-) for flag purpose
+            // call pruneInflightLog(final long epochID)
+            sendAcknowledgeMessages(
+                    pendingCheckpoint.getCheckpointPlan().getTasksToTrigger().stream().map(Execution::getVertex).collect(
+                            Collectors.toList()),
+                    checkpointId,
+                    -1);
+            sendAcknowledgeMessages(
+                    pendingCheckpoint.getCheckpointPlan().getTasksToCommitTo(),
+                    checkpointId,
+                    -1);
+        }
     }
 
     void scheduleTriggerRequest() {
@@ -1592,6 +1608,21 @@ public class CheckpointCoordinator {
             }
 
             LOG.info("Restoring job {} from {}.", job, latest);
+
+            //set similar replied epoch ID for subset snapshot groups
+            Set<ExecutionVertex> initiatorsVertices = new HashSet<>();
+            for (ExecutionJobVertex executionJobVertex : tasks) {
+                for(IntermediateResult ir : executionJobVertex.getInputs()){
+                    for(IntermediateResultPartition irp : ir.getPartitions()) {
+                        if(irp.getResultType().isReconnectable()){
+                            initiatorsVertices.add(irp.getProducer());
+                        }
+                    }
+                }
+            }
+
+            //call setRepliedInfligtLogEpoch(long checkpointID)
+            sendAcknowledgeMessages(new ArrayList<>(initiatorsVertices), latest.getCheckpointID(), -2);
 
             // re-assign the task states
             final Map<OperatorID, OperatorState> operatorStates = extractOperatorStates(latest);
