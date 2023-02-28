@@ -151,9 +151,9 @@ public class WindowJoin2 {
                                     @Override
                                     public Tuple2<String, Integer> map(
                                             Tuple2<String, Integer> value) throws Exception {
-                                        if (Calendar.getInstance().get(Calendar.SECOND) == 0) {
-                                            throw new Exception("Simulate failed");
-                                        }
+//                                        if (Calendar.getInstance().get(Calendar.SECOND) == 0) {
+//                                            throw new Exception("Simulate failed");
+//                                        }
                                         return value;
                                     }
                                 })
@@ -182,7 +182,7 @@ public class WindowJoin2 {
 
         // print the results with a single thread, rather than in parallel
         joinedStream
-                .addSink(new DiscardingSink<>())
+                .addSink(new FailingSink<>())
                 .uid("Sink")
                 .name("Sink")
                 .setParallelism(2)
@@ -198,16 +198,16 @@ public class WindowJoin2 {
 //                                    }
 //                                })
 //                .name("FW Join")
-//                .setParallelism(2)
-//                .snapshotRegion(2);
-
+//                .setParallelism(1)
+//                .snapshotRegion(3);
+//
 //        fwJoin.addSink(new
 //                        DiscardingSink<>()).uid("Sink2")
 //                .name("Sink2")
-//                .setParallelism(2)
-//                .snapshotRegion(2);
+//                .setParallelism(1)
+//                .snapshotRegion(3);
 
-        //                System.out.println(env.getExecutionPlan());
+//                        System.out.println(env.getExecutionPlan());
 
         // execute program
         env.execute("Windowed Join Example");

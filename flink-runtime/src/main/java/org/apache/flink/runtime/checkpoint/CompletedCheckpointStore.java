@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /** A bounded LIFO-queue of {@link CompletedCheckpoint} instances. */
 public interface CompletedCheckpointStore {
@@ -55,21 +57,19 @@ public interface CompletedCheckpointStore {
         return allCheckpoints.get(allCheckpoints.size() - 1);
     }
 
-    default CompletedCheckpoint getLatestCheckpoint(String snapshotGroup) throws Exception {
+    default CompletedCheckpoint getLatestCheckpoint(Set<String> snapshotGroups) throws Exception {
         List<CompletedCheckpoint> allCheckpoints = getAllCheckpoints();
         for (int i = allCheckpoints.size() - 1; i >= 0; i--) {
             CompletedCheckpoint checkpoint = allCheckpoints.get(i);
-            String sg = checkpoint.getSnapshotGroup();
+            String sg = checkpoint.getSnapshotGroup(); //Complete format of snapshot group, including route to all parents
             if (sg == null) { // can be used by any region
                 return checkpoint;
             }
-            if (snapshotGroup == null) { // need global checkpoint
+            if (snapshotGroups.isEmpty()) { // need global checkpoint
                 continue;
             }
-            int sgNum =
-                    Integer.valueOf(snapshotGroup.substring(snapshotGroup.lastIndexOf("-") + 1));
-            int sgNumCp = Integer.valueOf(sg.substring(sg.lastIndexOf("-") + 1));
-            if (sgNumCp <= sgNum) {
+
+            if(snapshotGroups.contains(sg)){
                 return checkpoint;
             }
         }
@@ -97,7 +97,14 @@ public interface CompletedCheckpointStore {
             return getLatestCheckpointId();
         }
         try {
-            return getLatestCheckpoint(snapshotGroup).getCheckpointID();
+            List<CompletedCheckpoint> allCheckpoints = getAllCheckpoints();
+            for (int i = allCheckpoints.size() - 1; i >= 0; i--) {
+                CompletedCheckpoint checkpoint = allCheckpoints.get(i);
+                if(checkpoint.getSnapshotGroup().equals(snapshotGroup)){
+                    return checkpoint.getCheckpointID();
+                }
+            }
+            return 0;
         } catch (Throwable throwable) {
             LOG.warn("Get the latest completed checkpoints failed", throwable);
             return 0;

@@ -1326,15 +1326,12 @@ public class CheckpointCoordinator {
         if(pendingCheckpoint.getCheckpointPlan().getTasksToTrigger().get(0).getVertex().getJobVertex().getSnapshotGroup() == null){
             // send the "notify complete" call to all snapshot group members. make the checkpointId minus (-) for flag purpose
             // call pruneInflightLog(final long epochID)
-            sendAcknowledgeMessages(
-                    pendingCheckpoint.getCheckpointPlan().getTasksToTrigger().stream().map(Execution::getVertex).collect(
-                            Collectors.toList()),
-                    checkpointId,
-                    -1);
-            sendAcknowledgeMessages(
-                    pendingCheckpoint.getCheckpointPlan().getTasksToCommitTo(),
-                    checkpointId,
-                    -1);
+            for(Execution task : pendingCheckpoint.getCheckpointPlan().getTasksToTrigger()){
+                task.pruneInflightLog(checkpointId);
+            }
+            for(ExecutionVertex vtx : pendingCheckpoint.getCheckpointPlan().getTasksToCommitTo()){
+                vtx.getCurrentExecutionAttempt().pruneInflightLog(checkpointId);
+            }
         }
     }
 
@@ -1562,28 +1559,58 @@ public class CheckpointCoordinator {
                     job,
                     sharedStateRegistry);
 
-            String snapshotGroup = null;
+            //Find the minimum subset of snapshot group which contains all tasks that need to be recovered
+            List<String[]> snapshotGroups = new ArrayList<>();
             int min = Integer.MAX_VALUE;
-            for (ExecutionJobVertex executionJobVertex : tasks) {
-                String sg = executionJobVertex.getSnapshotGroup();
+            for (ExecutionJobVertex vertex : tasks) {
+                String sg = vertex.getSnapshotGroup();
                 if (sg == null) {
-                    snapshotGroup = null;
                     break;
                 }
                 if (!sg.isEmpty()) {
-                    int sgNum = Integer.valueOf(sg.substring(sg.lastIndexOf("-") + 1));
-                    if (sgNum < min) {
-                        min = sgNum;
-                        snapshotGroup = sg;
+                    String snap = vertex.getJobVertex().getSnapshotGroupHierarchy();
+                    snap = snap.substring(snap.indexOf("-") + 1);
+                    String[] snapRoute = snap.split("-");
+                    if(snapRoute.length < min){
+                        snapshotGroups.clear();
+                        snapshotGroups.add(snapRoute);
+                        min = snapRoute.length;
+                    } else {
+                        snapshotGroups.add(snapRoute);
                     }
                 }
             }
 
-            LOG.info("Restoring snapshot group: {}", snapshotGroup);
+            Set<String> snapGroups = new HashSet<>();
+            if(!snapshotGroups.isEmpty()){
+                for (int i = min - 1; i >= 0; i--) {
+                    if(snapGroups.isEmpty()) {
+                        String currSnap = "";
+                        boolean found = true;
+                        for (String[] snapRoute : snapshotGroups) {
+                            if (currSnap.isEmpty()) {
+                                currSnap = snapRoute[i];
+                            } else if (!snapRoute[i].equals(currSnap)) {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found) {
+                            snapGroups.add("snapshot-" + currSnap);
+                        }
+                    } else {
+                        for (String[] snapRoute : snapshotGroups) {
+                            snapGroups.add("snapshot-" + snapRoute[i]);
+                        }
+                    }
+                }
+            }
+
+            LOG.info("Candidates snapshot groups to be restored: {}", snapGroups);
 
             // Restore from the latest checkpoint
             CompletedCheckpoint latest =
-                    completedCheckpointStore.getLatestCheckpoint(snapshotGroup);
+                    completedCheckpointStore.getLatestCheckpoint(snapGroups);
 
             if (latest == null) {
                 LOG.info("No checkpoint found during restore.");
@@ -1611,9 +1638,9 @@ public class CheckpointCoordinator {
 
             //set similar replied epoch ID for subset snapshot groups
             Set<ExecutionVertex> initiatorsVertices = new HashSet<>();
-            for (ExecutionJobVertex executionJobVertex : tasks) {
+            for (ExecutionJobVertex executionJobVertex : tasks){
                 for(IntermediateResult ir : executionJobVertex.getInputs()){
-                    for(IntermediateResultPartition irp : ir.getPartitions()) {
+                    for(IntermediateResultPartition irp : ir.getPartitions()){
                         if(irp.getResultType().isReconnectable()){
                             initiatorsVertices.add(irp.getProducer());
                         }
@@ -1622,7 +1649,9 @@ public class CheckpointCoordinator {
             }
 
             //call setRepliedInfligtLogEpoch(long checkpointID)
-            sendAcknowledgeMessages(new ArrayList<>(initiatorsVertices), latest.getCheckpointID(), -2);
+            for(ExecutionVertex vtx : initiatorsVertices){
+                vtx.getCurrentExecutionAttempt().setRepliedInfligtLogEpoch(latest.getCheckpointID());
+            }
 
             // re-assign the task states
             final Map<OperatorID, OperatorState> operatorStates = extractOperatorStates(latest);

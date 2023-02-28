@@ -94,8 +94,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
@@ -364,14 +367,13 @@ public class StreamGraphGenerator {
             LOG.info("Snapshot Groups Indexes: {}", sgMap);
         }
 
-        Integer counter = 0;
         for (StreamNode node : streamNodes) {
             if (node.getSnapshotGroup() == null && !sgMap.isEmpty()) {
-                node.setSnapshotRegion(sgMap.get(counter));
+                node.setSnapshotRegion(sgMap.get(node.getId()));
             }
             LOG.info(
                     "Node {}: {}, SG: {}",
-                    counter,
+                    node.getId(),
                     node.getOperatorName(),
                     node.getSnapshotRegion());
             String slotSharing = "slot-" + node.getSnapshotRegion();
@@ -384,7 +386,31 @@ public class StreamGraphGenerator {
                     edge.setSupportsUnalignedCheckpoints(false);
                 }
             }
-            counter++;
+        }
+
+        //set the parents region information in the format of snapshot-parent1-parent2-sg
+        Set<Integer> visitedNodes = new HashSet<>();
+        for(Integer src : streamGraph.getSourceIDs()){
+            for(Integer snk : streamGraph.getSinkIDs()){
+                for(List<Integer> path : findAllPaths(src, snk)){
+                    String parentStr = ""; //null = empty string
+                    Integer prevSg = null; //prev./upstream snapshot region
+                    for(Integer id : path){
+                        StreamNode currentNode = streamGraph.getStreamNode(id);
+                        if (!Objects.equals(currentNode.getSnapshotRegion(), prevSg)){
+                            if(prevSg != null){
+                                //change parents sequence
+                                parentStr += prevSg + "-";
+                            }
+                        }
+                        prevSg = currentNode.getSnapshotRegion();
+                        if(!visitedNodes.contains(id)){
+                            currentNode.setSnapshotRegionParents(parentStr);
+                            visitedNodes.add(id);
+                        }
+                    }
+                }
+            }
         }
 
         final StreamGraph builtStreamGraph = streamGraph;

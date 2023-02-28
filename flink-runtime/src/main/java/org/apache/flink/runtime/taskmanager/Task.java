@@ -1427,7 +1427,7 @@ public class Task
                     if(subpartition instanceof PipelinedApproximateSubpartition){
                         PipelinedApproximateSubpartition approximateSubpartition = (PipelinedApproximateSubpartition) subpartition;
                         approximateSubpartition.setRepliedEpoch(checkpointID);
-                        LOG.info(
+                        LOG.debug(
                                 "{} partition {} setRepliedEpoch: {}",
                                 taskNameWithSubtask,
                                 approximateSubpartition.getSubPartitionIndex(),

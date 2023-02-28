@@ -776,6 +776,36 @@ public class Execution
         processFail(t, true);
     }
 
+    public void pruneInflightLog(long checkpointId) {
+        final LogicalSlot slot = assignedResource;
+
+        if (slot != null) {
+            final TaskManagerGateway taskManagerGateway = slot.getTaskManagerGateway();
+
+            taskManagerGateway.pruneInflightLog(
+                    attemptId, getVertex().getJobId(), checkpointId);
+        } else {
+            LOG.debug(
+                    "The execution has no slot assigned. This indicates that the execution is "
+                            + "no longer running.");
+        }
+    }
+
+    public void setRepliedInfligtLogEpoch(long checkpointId) {
+        final LogicalSlot slot = assignedResource;
+
+        if (slot != null) {
+            final TaskManagerGateway taskManagerGateway = slot.getTaskManagerGateway();
+
+            taskManagerGateway.setRepliedInfligtLogEpoch(
+                    attemptId, getVertex().getJobId(), checkpointId);
+        } else {
+            LOG.debug(
+                    "The execution has no slot assigned. This indicates that the execution is "
+                            + "no longer running.");
+        }
+    }
+
     /**
      * Notify the task of this execution about a completed checkpoint.
      *

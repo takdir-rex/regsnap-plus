@@ -589,7 +589,7 @@ public class JobVertex implements java.io.Serializable {
         }
         for (JobEdge jobEdge : getInputs()) {
             String upstreamSnapshotGroup = jobEdge.getSource().getProducer().getSnapshotGroup();
-            if (!Objects.equals(upstreamSnapshotGroup, snapshotGroup)) {
+            if (!Objects.equals(upstreamSnapshotGroup, getSnapshotGroup())) {
                 return true;
             }
         }
@@ -611,7 +611,7 @@ public class JobVertex implements java.io.Serializable {
             for (JobEdge edge : output.getConsumers()) {
                 String targetSnapshotGroup = edge.getTarget().getSnapshotGroup();
                 if (Objects.equals(targetSnapshotGroup, givenSnapshotGroup)
-                        && !Objects.equals(snapshotGroup, givenSnapshotGroup)) {
+                        && !Objects.equals(getSnapshotGroup(), givenSnapshotGroup)) {
                     return true;
                 }
             }
@@ -649,7 +649,14 @@ public class JobVertex implements java.io.Serializable {
     /** Optionally, a snapshot group of this vertex */
     @Nullable
     public String getSnapshotGroup() {
-        return snapshotGroup;
+        if(snapshotGroup != null){
+            return "snapshot" + snapshotGroup.substring(snapshotGroup.lastIndexOf("-"));
+        }
+        return null;
+    }
+
+    public String getSnapshotGroupHierarchy(){
+        return this.snapshotGroup;
     }
 
     public void setSnapshotGroup(@Nullable String snapshotGroup) {

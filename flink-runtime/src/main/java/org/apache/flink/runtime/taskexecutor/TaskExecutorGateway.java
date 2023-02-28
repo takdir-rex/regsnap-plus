@@ -138,6 +138,12 @@ public interface TaskExecutorGateway
             long checkpointTimestamp,
             CheckpointOptions checkpointOptions);
 
+    CompletableFuture<Acknowledge> pruneInflightLog(
+            ExecutionAttemptID executionAttemptID, long checkpointId);
+
+    CompletableFuture<Acknowledge> setRepliedInfligtLogEpoch(
+            ExecutionAttemptID executionAttemptID, long checkpointId);
+
     /**
      * Confirm a checkpoint for the given task. The checkpoint is identified by the checkpoint ID
      * and the checkpoint timestamp.

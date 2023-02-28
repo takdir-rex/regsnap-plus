@@ -246,6 +246,18 @@ public class TestingTaskExecutorGateway implements TaskExecutorGateway {
     }
 
     @Override
+    public CompletableFuture<Acknowledge> pruneInflightLog(
+            ExecutionAttemptID executionAttemptID, long checkpointId) {
+        return CompletableFuture.completedFuture(Acknowledge.get());
+    }
+
+    @Override
+    public CompletableFuture<Acknowledge> setRepliedInfligtLogEpoch(
+            ExecutionAttemptID executionAttemptID, long checkpointId) {
+        return CompletableFuture.completedFuture(Acknowledge.get());
+    }
+
+    @Override
     public CompletableFuture<Acknowledge> confirmCheckpoint(
             ExecutionAttemptID executionAttemptID, long checkpointId, long checkpointTimestamp) {
         return confirmCheckpointFunction.apply(

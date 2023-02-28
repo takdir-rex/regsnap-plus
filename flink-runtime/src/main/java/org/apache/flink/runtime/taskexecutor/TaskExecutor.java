@@ -970,6 +970,60 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
     }
 
     @Override
+    public CompletableFuture<Acknowledge> pruneInflightLog(
+            ExecutionAttemptID executionAttemptID, long checkpointId) {
+        log.debug(
+                "pruneInflightLog {}@{} for {}.",
+                checkpointId,
+                executionAttemptID);
+
+        final Task task = taskSlotTable.getTask(executionAttemptID);
+
+        if (task != null) {
+            task.pruneInflightLog(checkpointId);
+            return CompletableFuture.completedFuture(Acknowledge.get());
+        } else {
+            final String message =
+                    "TaskManager received pruneInflightLog for unknown task "
+                            + executionAttemptID
+                            + '.';
+
+            log.debug(message);
+            return FutureUtils.completedExceptionally(
+                    new CheckpointException(
+                            message,
+                            CheckpointFailureReason.UNKNOWN_TASK_CHECKPOINT_NOTIFICATION_FAILURE));
+        }
+    }
+
+    @Override
+    public CompletableFuture<Acknowledge> setRepliedInfligtLogEpoch(
+            ExecutionAttemptID executionAttemptID, long checkpointId) {
+        log.debug(
+                "setRepliedInfligtLogEpoch {}@{} for {}.",
+                checkpointId,
+                executionAttemptID);
+
+        final Task task = taskSlotTable.getTask(executionAttemptID);
+
+        if (task != null) {
+            task.setRepliedInfligtLogEpoch(checkpointId);
+            return CompletableFuture.completedFuture(Acknowledge.get());
+        } else {
+            final String message =
+                    "TaskManager received setRepliedInfligtLogEpoch for unknown task "
+                            + executionAttemptID
+                            + '.';
+
+            log.debug(message);
+            return FutureUtils.completedExceptionally(
+                    new CheckpointException(
+                            message,
+                            CheckpointFailureReason.UNKNOWN_TASK_CHECKPOINT_NOTIFICATION_FAILURE));
+        }
+    }
+
+    @Override
     public CompletableFuture<Acknowledge> confirmCheckpoint(
             ExecutionAttemptID executionAttemptID, long checkpointId, long checkpointTimestamp) {
         log.debug(
@@ -981,13 +1035,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
         final Task task = taskSlotTable.getTask(executionAttemptID);
 
         if (task != null) {
-            if(checkpointTimestamp == -1){
-                task.pruneInflightLog(checkpointId);
-            } else if(checkpointTimestamp == -2){
-                task.setRepliedInfligtLogEpoch(checkpointId);
-            } else {
-                task.notifyCheckpointComplete(checkpointId);
-            }
+            task.notifyCheckpointComplete(checkpointId);
 
             return CompletableFuture.completedFuture(Acknowledge.get());
         } else {

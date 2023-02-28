@@ -80,6 +80,18 @@ public class RpcTaskManagerGateway implements TaskManagerGateway {
     }
 
     @Override
+    public void pruneInflightLog(
+            ExecutionAttemptID executionAttemptID, JobID jobId, long checkpointId) {
+        taskExecutorGateway.pruneInflightLog(executionAttemptID, checkpointId);
+    }
+
+    @Override
+    public void setRepliedInfligtLogEpoch(
+            ExecutionAttemptID executionAttemptID, JobID jobId, long checkpointId) {
+        taskExecutorGateway.setRepliedInfligtLogEpoch(executionAttemptID, checkpointId);
+    }
+
+    @Override
     public void notifyCheckpointComplete(
             ExecutionAttemptID executionAttemptID, JobID jobId, long checkpointId, long timestamp) {
         taskExecutorGateway.confirmCheckpoint(executionAttemptID, checkpointId, timestamp);
