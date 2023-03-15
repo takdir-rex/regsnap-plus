@@ -151,14 +151,14 @@ public class WindowJoin2 {
                                     @Override
                                     public Tuple2<String, Integer> map(
                                             Tuple2<String, Integer> value) throws Exception {
-//                                        if (Calendar.getInstance().get(Calendar.SECOND) == 0) {
-//                                            throw new Exception("Simulate failed");
-//                                        }
+                                        if (Calendar.getInstance().get(Calendar.SECOND) == 0) {
+                                            throw new Exception("Simulate failed");
+                                        }
                                         return value;
                                     }
                                 })
                         .name("FW Salaries")
-                        .setParallelism(2)
+                        .setParallelism(1)
                         .snapshotRegion(1);
 
         // run the actual window join program
@@ -182,30 +182,30 @@ public class WindowJoin2 {
 
         // print the results with a single thread, rather than in parallel
         joinedStream
-                .addSink(new FailingSink<>())
+                .addSink(new DiscardingSink<>())
                 .uid("Sink")
                 .name("Sink")
                 .setParallelism(2)
                 .snapshotRegion(2);
 
-//        DataStream<Tuple3<String, Integer, Integer>> fwJoin = joinedStream.map(
-//                                new MapFunction<
-//                                        Tuple3<String, Integer, Integer>, Tuple3<String, Integer, Integer>>() {
-//                                    @Override
-//                                    public Tuple3<String, Integer, Integer> map(
-//                                            Tuple3<String, Integer, Integer> value) throws Exception {
-//                                        return value;
-//                                    }
-//                                })
-//                .name("FW Join")
-//                .setParallelism(1)
-//                .snapshotRegion(3);
-//
-//        fwJoin.addSink(new
-//                        DiscardingSink<>()).uid("Sink2")
-//                .name("Sink2")
-//                .setParallelism(1)
-//                .snapshotRegion(3);
+        DataStream<Tuple3<String, Integer, Integer>> fwJoin = joinedStream.map(
+                                new MapFunction<
+                                        Tuple3<String, Integer, Integer>, Tuple3<String, Integer, Integer>>() {
+                                    @Override
+                                    public Tuple3<String, Integer, Integer> map(
+                                            Tuple3<String, Integer, Integer> value) throws Exception {
+                                        return value;
+                                    }
+                                })
+                .name("FW Join")
+                .setParallelism(1)
+                .snapshotRegion(3);
+
+        fwJoin.addSink(new
+                        DiscardingSink<>()).uid("Sink2")
+                .name("Sink2")
+                .setParallelism(1)
+                .snapshotRegion(3);
 
 //                        System.out.println(env.getExecutionPlan());
 
