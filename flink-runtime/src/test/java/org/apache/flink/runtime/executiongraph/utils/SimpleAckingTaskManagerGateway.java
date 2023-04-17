@@ -127,15 +127,11 @@ public class SimpleAckingTaskManagerGateway implements TaskManagerGateway {
 
     @Override
     public void pruneInflightLog(
-            ExecutionAttemptID executionAttemptID,
-            JobID jobId,
-            long checkpointId) {}
+            ExecutionAttemptID executionAttemptID, JobID jobId, long checkpointId) {}
 
     @Override
     public void setRepliedInfligtLogEpoch(
-            ExecutionAttemptID executionAttemptID,
-            JobID jobId,
-            long checkpointId) {}
+            ExecutionAttemptID executionAttemptID, JobID jobId, long checkpointId) {}
 
     @Override
     public void notifyCheckpointComplete(

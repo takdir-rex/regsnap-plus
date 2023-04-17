@@ -85,8 +85,7 @@ public interface TaskManagerGateway extends TaskExecutorOperatorEventGateway {
      */
     void releasePartitions(JobID jobId, Set<ResultPartitionID> partitionIds);
 
-    void pruneInflightLog(
-            ExecutionAttemptID executionAttemptID, JobID jobId, long checkpointId);
+    void pruneInflightLog(ExecutionAttemptID executionAttemptID, JobID jobId, long checkpointId);
 
     void setRepliedInfligtLogEpoch(
             ExecutionAttemptID executionAttemptID, JobID jobId, long checkpointId);

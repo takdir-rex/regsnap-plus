@@ -84,7 +84,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
@@ -1323,13 +1322,21 @@ public class CheckpointCoordinator {
                 checkpointId,
                 completedCheckpoint.getTimestamp());
 
-        if(pendingCheckpoint.getCheckpointPlan().getTasksToTrigger().get(0).getVertex().getJobVertex().getSnapshotGroup() == null){
-            // send the "notify complete" call to all snapshot group members. make the checkpointId minus (-) for flag purpose
+        if (pendingCheckpoint
+                        .getCheckpointPlan()
+                        .getTasksToTrigger()
+                        .get(0)
+                        .getVertex()
+                        .getJobVertex()
+                        .getSnapshotGroup()
+                == null) {
+            // send the "notify complete" call to all snapshot group members. make the checkpointId
+            // minus (-) for flag purpose
             // call pruneInflightLog(final long epochID)
-            for(Execution task : pendingCheckpoint.getCheckpointPlan().getTasksToTrigger()){
+            for (Execution task : pendingCheckpoint.getCheckpointPlan().getTasksToTrigger()) {
                 task.pruneInflightLog(checkpointId);
             }
-            for(ExecutionVertex vtx : pendingCheckpoint.getCheckpointPlan().getTasksToCommitTo()){
+            for (ExecutionVertex vtx : pendingCheckpoint.getCheckpointPlan().getTasksToCommitTo()) {
                 vtx.getCurrentExecutionAttempt().pruneInflightLog(checkpointId);
             }
         }
@@ -1559,7 +1566,8 @@ public class CheckpointCoordinator {
                     job,
                     sharedStateRegistry);
 
-            //Find the minimum subset of snapshot group which contains all tasks that need to be recovered
+            // Find the minimum subset of snapshot group which contains all tasks that need to be
+            // recovered
             List<String[]> snapshotGroups = new ArrayList<>();
             int min = Integer.MAX_VALUE;
             for (ExecutionJobVertex vertex : tasks) {
@@ -1571,7 +1579,7 @@ public class CheckpointCoordinator {
                     String snap = vertex.getJobVertex().getSnapshotGroupHierarchy();
                     snap = snap.substring(snap.indexOf("-") + 1);
                     String[] snapRoute = snap.split("-");
-                    if(snapRoute.length < min){
+                    if (snapRoute.length < min) {
                         snapshotGroups.clear();
                         snapshotGroups.add(snapRoute);
                         min = snapRoute.length;
@@ -1582,9 +1590,9 @@ public class CheckpointCoordinator {
             }
 
             Set<String> snapGroups = new HashSet<>();
-            if(!snapshotGroups.isEmpty()){
+            if (!snapshotGroups.isEmpty()) {
                 for (int i = min - 1; i >= 0; i--) {
-                    if(snapGroups.isEmpty()) {
+                    if (snapGroups.isEmpty()) {
                         String currSnap = "";
                         boolean found = true;
                         for (String[] snapRoute : snapshotGroups) {
@@ -1609,8 +1617,7 @@ public class CheckpointCoordinator {
             LOG.info("Candidates snapshot groups to be restored: {}", snapGroups);
 
             // Restore from the latest checkpoint
-            CompletedCheckpoint latest =
-                    completedCheckpointStore.getLatestCheckpoint(snapGroups);
+            CompletedCheckpoint latest = completedCheckpointStore.getLatestCheckpoint(snapGroups);
 
             if (latest == null) {
                 LOG.info("No checkpoint found during restore.");
@@ -1636,21 +1643,22 @@ public class CheckpointCoordinator {
 
             LOG.info("Restoring job {} from {}.", job, latest);
 
-            //set similar replied epoch ID for subset snapshot groups
+            // set similar replied epoch ID for subset snapshot groups
             Set<ExecutionVertex> initiatorsVertices = new HashSet<>();
-            for (ExecutionJobVertex executionJobVertex : tasks){
-                for(IntermediateResult ir : executionJobVertex.getInputs()){
-                    for(IntermediateResultPartition irp : ir.getPartitions()){
-                        if(irp.getResultType().isReconnectable()){
+            for (ExecutionJobVertex executionJobVertex : tasks) {
+                for (IntermediateResult ir : executionJobVertex.getInputs()) {
+                    for (IntermediateResultPartition irp : ir.getPartitions()) {
+                        if (irp.getResultType().isReconnectable()) {
                             initiatorsVertices.add(irp.getProducer());
                         }
                     }
                 }
             }
 
-            //call setRepliedInfligtLogEpoch(long checkpointID)
-            for(ExecutionVertex vtx : initiatorsVertices){
-                vtx.getCurrentExecutionAttempt().setRepliedInfligtLogEpoch(latest.getCheckpointID());
+            // call setRepliedInfligtLogEpoch(long checkpointID)
+            for (ExecutionVertex vtx : initiatorsVertices) {
+                vtx.getCurrentExecutionAttempt()
+                        .setRepliedInfligtLogEpoch(latest.getCheckpointID());
             }
 
             // re-assign the task states

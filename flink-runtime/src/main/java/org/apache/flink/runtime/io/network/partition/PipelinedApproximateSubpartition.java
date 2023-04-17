@@ -120,7 +120,7 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
         return result;
     }
 
-    public void pruneInflightLog(long checkpointId){
+    public void pruneInflightLog(long checkpointId) {
         LOG.debug("{} Pruning inflight log: {}", parent.getOwningTaskName(), checkpointId);
         inFlightLog.prune(checkpointId);
     }
@@ -134,7 +134,10 @@ public class PipelinedApproximateSubpartition extends PipelinedSubpartition {
             repliedInFlightLogSIzeCounter += buffer.getSize();
         } else {
             inflightReplayIterator = null;
-            LOG.info("{} Finished replaying inflight log: {} bytes", parent.getOwningTaskName(), repliedInFlightLogSIzeCounter);
+            LOG.info(
+                    "{} Finished replaying inflight log: {} bytes",
+                    parent.getOwningTaskName(),
+                    repliedInFlightLogSIzeCounter);
             repliedInFlightLogSIzeCounter = 0;
         }
         return new BufferAndBacklog(

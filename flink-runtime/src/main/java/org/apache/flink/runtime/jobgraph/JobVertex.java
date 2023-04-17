@@ -649,13 +649,13 @@ public class JobVertex implements java.io.Serializable {
     /** Optionally, a snapshot group of this vertex */
     @Nullable
     public String getSnapshotGroup() {
-        if(snapshotGroup != null){
+        if (snapshotGroup != null) {
             return "snapshot" + snapshotGroup.substring(snapshotGroup.lastIndexOf("-"));
         }
         return null;
     }
 
-    public String getSnapshotGroupHierarchy(){
+    public String getSnapshotGroupHierarchy() {
         return this.snapshotGroup;
     }
 

@@ -972,10 +972,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
     @Override
     public CompletableFuture<Acknowledge> pruneInflightLog(
             ExecutionAttemptID executionAttemptID, long checkpointId) {
-        log.debug(
-                "pruneInflightLog {}@{} for {}.",
-                checkpointId,
-                executionAttemptID);
+        log.debug("pruneInflightLog {}@{} for {}.", checkpointId, executionAttemptID);
 
         final Task task = taskSlotTable.getTask(executionAttemptID);
 
@@ -999,10 +996,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
     @Override
     public CompletableFuture<Acknowledge> setRepliedInfligtLogEpoch(
             ExecutionAttemptID executionAttemptID, long checkpointId) {
-        log.debug(
-                "setRepliedInfligtLogEpoch {}@{} for {}.",
-                checkpointId,
-                executionAttemptID);
+        log.debug("setRepliedInfligtLogEpoch {}@{} for {}.", checkpointId, executionAttemptID);
 
         final Task task = taskSlotTable.getTask(executionAttemptID);
 

@@ -132,15 +132,13 @@ public class TaskExecutorGatewayDecoratorBase implements TaskExecutorGateway {
     @Override
     public CompletableFuture<Acknowledge> pruneInflightLog(
             ExecutionAttemptID executionAttemptID, long checkpointId) {
-        return originalGateway.pruneInflightLog(
-                executionAttemptID, checkpointId);
+        return originalGateway.pruneInflightLog(executionAttemptID, checkpointId);
     }
 
     @Override
     public CompletableFuture<Acknowledge> setRepliedInfligtLogEpoch(
             ExecutionAttemptID executionAttemptID, long checkpointId) {
-        return originalGateway.setRepliedInfligtLogEpoch(
-                executionAttemptID, checkpointId);
+        return originalGateway.setRepliedInfligtLogEpoch(executionAttemptID, checkpointId);
     }
 
     @Override

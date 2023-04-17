@@ -28,7 +28,6 @@ import org.apache.flink.api.common.operators.util.SlotSharingGroupUtils;
 import org.apache.flink.api.connector.source.Boundedness;
 import org.apache.flink.api.dag.Transformation;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.ClusterOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ExecutionOptions;
@@ -305,25 +304,25 @@ public class StreamGraphGenerator {
         this.savepointRestoreSettings = savepointRestoreSettings;
     }
 
-    private List<List<Integer>> findAllPaths (int src, int dst) {
+    private List<List<Integer>> findAllPaths(int src, int dst) {
         List<List<Integer>> allPaths = new ArrayList<>();
         List<Integer> path = new ArrayList<Integer>();
         path.add(src);
 
-        DFS (src, dst, path, allPaths);
+        DFS(src, dst, path, allPaths);
 
         return allPaths;
     }
 
-    private void DFS (int src , int dst, List<Integer> path, List<List<Integer>> allPaths) {
+    private void DFS(int src, int dst, List<Integer> path, List<List<Integer>> allPaths) {
         if (src == dst) {
             allPaths.add(new ArrayList<>(path));
         } else {
-            for(StreamEdge outEdge : streamGraph.getStreamEdges(src)){
+            for (StreamEdge outEdge : streamGraph.getStreamEdges(src)) {
                 Integer targetNode = outEdge.getTargetId();
                 path.add(targetNode);
-                DFS (targetNode, dst, path, allPaths);
-                path.remove(path.size()-1);
+                DFS(targetNode, dst, path, allPaths);
+                path.remove(path.size() - 1);
             }
         }
     }
@@ -367,6 +366,20 @@ public class StreamGraphGenerator {
             LOG.info("Snapshot Groups Indexes: {}", sgMap);
         }
 
+        Map<Integer, Integer> slotMap = new HashMap<>(); // index --> slotsharing
+        String slotString = config.getString("s", "");
+        if (!slotString.isEmpty()) {
+            // Parameter format: <slot1>:<idx0>,<idx1>;<slot2>:<idx2>,<idx3>
+            for (String sl : slotString.split(";")) {
+                String[] slEl = sl.split(":");
+                Integer slot = Integer.valueOf(slEl[0]);
+                for (String idx : slEl[1].split(",")) {
+                    slotMap.put(Integer.valueOf(idx), slot);
+                }
+            }
+            LOG.info("Slot Sharing Groups Indexes: {}", slotMap);
+        }
+
         for (StreamNode node : streamNodes) {
             if (node.getSnapshotGroup() == null && !sgMap.isEmpty()) {
                 node.setSnapshotRegion(sgMap.get(node.getId()));
@@ -376,35 +389,35 @@ public class StreamGraphGenerator {
                     node.getId(),
                     node.getOperatorName(),
                     node.getSnapshotRegion());
-            String slotSharing = "slot-" + node.getSnapshotRegion();
+            String slotSharing = "slot-null";
+            if (!slotMap.isEmpty()) {
+                slotSharing = "slot-" + slotMap.get(node.getId());
+            }
             node.setSlotSharingGroup(slotSharing);
-            if (node
-                    .getInEdges()
-                    .stream()
-                    .anyMatch(this::shouldDisableUnalignedCheckpointing)) {
+            if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
                 for (StreamEdge edge : node.getInEdges()) {
                     edge.setSupportsUnalignedCheckpoints(false);
                 }
             }
         }
 
-        //set the parents region information in the format of snapshot-parent1-parent2-sg
+        // set the parents region information in the format of snapshot-parent1-parent2-sg
         Set<Integer> visitedNodes = new HashSet<>();
-        for(Integer src : streamGraph.getSourceIDs()){
-            for(Integer snk : streamGraph.getSinkIDs()){
-                for(List<Integer> path : findAllPaths(src, snk)){
-                    String parentStr = ""; //null = empty string
-                    Integer prevSg = null; //prev./upstream snapshot region
-                    for(Integer id : path){
+        for (Integer src : streamGraph.getSourceIDs()) {
+            for (Integer snk : streamGraph.getSinkIDs()) {
+                for (List<Integer> path : findAllPaths(src, snk)) {
+                    String parentStr = ""; // null = empty string
+                    Integer prevSg = null; // prev./upstream snapshot region
+                    for (Integer id : path) {
                         StreamNode currentNode = streamGraph.getStreamNode(id);
-                        if (!Objects.equals(currentNode.getSnapshotRegion(), prevSg)){
-                            if(prevSg != null){
-                                //change parents sequence
+                        if (!Objects.equals(currentNode.getSnapshotRegion(), prevSg)) {
+                            if (prevSg != null) {
+                                // change parents sequence
                                 parentStr += prevSg + "-";
                             }
                         }
                         prevSg = currentNode.getSnapshotRegion();
-                        if(!visitedNodes.contains(id)){
+                        if (!visitedNodes.contains(id)) {
                             currentNode.setSnapshotRegionParents(parentStr);
                             visitedNodes.add(id);
                         }

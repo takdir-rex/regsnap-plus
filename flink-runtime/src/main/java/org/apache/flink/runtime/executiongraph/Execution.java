@@ -782,8 +782,7 @@ public class Execution
         if (slot != null) {
             final TaskManagerGateway taskManagerGateway = slot.getTaskManagerGateway();
 
-            taskManagerGateway.pruneInflightLog(
-                    attemptId, getVertex().getJobId(), checkpointId);
+            taskManagerGateway.pruneInflightLog(attemptId, getVertex().getJobId(), checkpointId);
         } else {
             LOG.debug(
                     "The execution has no slot assigned. This indicates that the execution is "

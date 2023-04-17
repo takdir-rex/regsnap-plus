@@ -1405,13 +1405,14 @@ public class Task
                         failureCause));
     }
 
-    public void pruneInflightLog(final long epochID){
-        for(ResultPartitionWriter writer : consumableNotifyingPartitionWriters){
-            if(writer instanceof PipelinedResultPartition){
+    public void pruneInflightLog(final long epochID) {
+        for (ResultPartitionWriter writer : consumableNotifyingPartitionWriters) {
+            if (writer instanceof PipelinedResultPartition) {
                 PipelinedResultPartition resultPartition = (PipelinedResultPartition) writer;
-                for(ResultSubpartition subpartition : resultPartition.getAllPartitions()){
-                    if(subpartition instanceof PipelinedApproximateSubpartition){
-                        PipelinedApproximateSubpartition approximateSubpartition = (PipelinedApproximateSubpartition) subpartition;
+                for (ResultSubpartition subpartition : resultPartition.getAllPartitions()) {
+                    if (subpartition instanceof PipelinedApproximateSubpartition) {
+                        PipelinedApproximateSubpartition approximateSubpartition =
+                                (PipelinedApproximateSubpartition) subpartition;
                         approximateSubpartition.pruneInflightLog(epochID);
                     }
                 }
@@ -1419,13 +1420,14 @@ public class Task
         }
     }
 
-    public void setRepliedInfligtLogEpoch(long checkpointID){
-        for(ResultPartitionWriter writer : consumableNotifyingPartitionWriters){
-            if(writer instanceof PipelinedResultPartition){
+    public void setRepliedInfligtLogEpoch(long checkpointID) {
+        for (ResultPartitionWriter writer : consumableNotifyingPartitionWriters) {
+            if (writer instanceof PipelinedResultPartition) {
                 PipelinedResultPartition resultPartition = (PipelinedResultPartition) writer;
-                for(ResultSubpartition subpartition : resultPartition.getAllPartitions()){
-                    if(subpartition instanceof PipelinedApproximateSubpartition){
-                        PipelinedApproximateSubpartition approximateSubpartition = (PipelinedApproximateSubpartition) subpartition;
+                for (ResultSubpartition subpartition : resultPartition.getAllPartitions()) {
+                    if (subpartition instanceof PipelinedApproximateSubpartition) {
+                        PipelinedApproximateSubpartition approximateSubpartition =
+                                (PipelinedApproximateSubpartition) subpartition;
                         approximateSubpartition.setRepliedEpoch(checkpointID);
                         LOG.debug(
                                 "{} partition {} setRepliedEpoch: {}",

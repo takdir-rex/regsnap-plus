@@ -307,8 +307,9 @@ public class StreamNode {
 
     @Nullable
     public Integer getSnapshotRegion() {
-        if(this.snapshotGroup != null){
-            return Integer.valueOf(this.snapshotGroup.substring(this.snapshotGroup.lastIndexOf("-") + 1));
+        if (this.snapshotGroup != null) {
+            return Integer.valueOf(
+                    this.snapshotGroup.substring(this.snapshotGroup.lastIndexOf("-") + 1));
         }
         return null;
     }
@@ -414,7 +415,7 @@ public class StreamNode {
     }
 
     public void setSnapshotRegionParents(String parents) {
-        if(this.snapshotGroup != null && !parents.isEmpty()){
+        if (this.snapshotGroup != null && !parents.isEmpty()) {
             this.snapshotGroup = "snapshot-" + parents + this.getSnapshotRegion();
         }
     }

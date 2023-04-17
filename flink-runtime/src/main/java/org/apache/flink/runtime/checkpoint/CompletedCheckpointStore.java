@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /** A bounded LIFO-queue of {@link CompletedCheckpoint} instances. */
@@ -61,7 +60,9 @@ public interface CompletedCheckpointStore {
         List<CompletedCheckpoint> allCheckpoints = getAllCheckpoints();
         for (int i = allCheckpoints.size() - 1; i >= 0; i--) {
             CompletedCheckpoint checkpoint = allCheckpoints.get(i);
-            String sg = checkpoint.getSnapshotGroup(); //Complete format of snapshot group, including route to all parents
+            String sg =
+                    checkpoint.getSnapshotGroup(); // Complete format of snapshot group, including
+            // route to all parents
             if (sg == null) { // can be used by any region
                 return checkpoint;
             }
@@ -69,7 +70,7 @@ public interface CompletedCheckpointStore {
                 continue;
             }
 
-            if(snapshotGroups.contains(sg)){
+            if (snapshotGroups.contains(sg)) {
                 return checkpoint;
             }
         }
@@ -100,7 +101,7 @@ public interface CompletedCheckpointStore {
             List<CompletedCheckpoint> allCheckpoints = getAllCheckpoints();
             for (int i = allCheckpoints.size() - 1; i >= 0; i--) {
                 CompletedCheckpoint checkpoint = allCheckpoints.get(i);
-                if(checkpoint.getSnapshotGroup().equals(snapshotGroup)){
+                if (checkpoint.getSnapshotGroup().equals(snapshotGroup)) {
                     return checkpoint.getCheckpointID();
                 }
             }
