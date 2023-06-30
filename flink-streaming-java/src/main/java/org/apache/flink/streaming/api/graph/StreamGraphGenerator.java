@@ -367,7 +367,7 @@ public class StreamGraphGenerator {
         }
 
         Map<Integer, Integer> slotMap = new HashMap<>(); // index --> slotsharing
-        String slotString = config.getString("s", "");
+        String slotString = config.getString("ss", "");
         if (!slotString.isEmpty()) {
             // Parameter format: <slot1>:<idx0>,<idx1>;<slot2>:<idx2>,<idx3>
             for (String sl : slotString.split(";")) {
@@ -384,16 +384,19 @@ public class StreamGraphGenerator {
             if (node.getSnapshotGroup() == null && !sgMap.isEmpty()) {
                 node.setSnapshotRegion(sgMap.get(node.getId()));
             }
-            LOG.info(
-                    "Node {}: {}, SG: {}",
-                    node.getId(),
-                    node.getOperatorName(),
-                    node.getSnapshotRegion());
             String slotSharing = "slot-null";
             if (!slotMap.isEmpty()) {
                 slotSharing = "slot-" + slotMap.get(node.getId());
             }
             node.setSlotSharingGroup(slotSharing);
+
+            LOG.info(
+                    "Node {}: {}, SG: {}, SL: {}",
+                    node.getId(),
+                    node.getOperatorName(),
+                    node.getSnapshotRegion(),
+                    node.getSlotSharingGroup());
+
             if (node.getInEdges().stream().anyMatch(this::shouldDisableUnalignedCheckpointing)) {
                 for (StreamEdge edge : node.getInEdges()) {
                     edge.setSupportsUnalignedCheckpoints(false);

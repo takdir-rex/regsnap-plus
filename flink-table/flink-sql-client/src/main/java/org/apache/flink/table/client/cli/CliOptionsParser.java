@@ -146,6 +146,15 @@ public class CliOptionsParser {
                     .desc("Comma separated indexes of snapshot groups to be created")
                     .build();
 
+    public static final Option OPTION_SLOTSHARINGGROUPS =
+            Option.builder("ss")
+                    .required(false)
+                    .longOpt("slotsharinggroups")
+                    .numberOfArgs(1)
+                    .argName("Slotsharing Groups")
+                    .desc("Comma separated indexes of slot sharing groups to be created")
+                    .build();
+
     private static final Options EMBEDDED_MODE_CLIENT_OPTIONS =
             getEmbeddedModeClientOptions(new Options());
     private static final Options GATEWAY_MODE_CLIENT_OPTIONS =
@@ -172,6 +181,7 @@ public class CliOptionsParser {
         options.addOption(PYEXEC_OPTION);
         options.addOption(PYCLIENTEXEC_OPTION);
         options.addOption(OPTION_SNAPSHOTGROUPS);
+        options.addOption(OPTION_SLOTSHARINGGROUPS);
         return options;
     }
 
@@ -284,7 +294,8 @@ public class CliOptionsParser {
                     line.getOptionValue(CliOptionsParser.OPTION_UPDATE.getOpt()),
                     line.getOptionValue(CliOptionsParser.OPTION_HISTORY.getOpt()),
                     getPythonConfiguration(line),
-                    line.getOptionValue(CliOptionsParser.OPTION_SNAPSHOTGROUPS.getOpt(), ""));
+                    line.getOptionValue(CliOptionsParser.OPTION_SNAPSHOTGROUPS.getOpt(), ""),
+                    line.getOptionValue(CliOptionsParser.OPTION_SLOTSHARINGGROUPS.getOpt(), ""));
         } catch (ParseException e) {
             throw new SqlClientException(e.getMessage());
         }

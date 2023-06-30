@@ -81,6 +81,10 @@ public class LocalContextUtils {
                 CliOptionsParser.OPTION_SNAPSHOTGROUPS.getOpt(),
                 options.getSnapshotGroupConfiguration());
 
+        configuration.setString(
+                CliOptionsParser.OPTION_SLOTSHARINGGROUPS.getOpt(),
+                options.getSlotsharingGroupConfiguration());
+
         final List<URL> dependencies = discoverDependencies(jars, libDirs);
 
         return new DefaultContext(dependencies, configuration, commandLines);

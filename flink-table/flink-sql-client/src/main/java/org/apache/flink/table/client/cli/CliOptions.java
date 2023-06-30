@@ -41,6 +41,7 @@ public class CliOptions {
     private final String historyFilePath;
     private final Configuration pythonConfiguration;
     private final String snapshotGroupConfiguration;
+    private final String slotsharingGroupConfiguration;
 
     public CliOptions(
             boolean isPrintHelp,
@@ -62,6 +63,7 @@ public class CliOptions {
                 updateStatement,
                 historyFilePath,
                 pythonConfiguration,
+                "",
                 "");
     }
 
@@ -75,7 +77,8 @@ public class CliOptions {
             String updateStatement,
             String historyFilePath,
             Configuration pythonConfiguration,
-            String snapshotGroupConfiguration) {
+            String snapshotGroupConfiguration,
+            String slotsharingGroupConfiguration) {
         this.isPrintHelp = isPrintHelp;
         this.sessionId = sessionId;
         this.initFile = initFile;
@@ -86,6 +89,7 @@ public class CliOptions {
         this.historyFilePath = historyFilePath;
         this.pythonConfiguration = pythonConfiguration;
         this.snapshotGroupConfiguration = snapshotGroupConfiguration;
+        this.slotsharingGroupConfiguration = slotsharingGroupConfiguration;
     }
 
     public boolean isPrintHelp() {
@@ -126,5 +130,9 @@ public class CliOptions {
 
     public String getSnapshotGroupConfiguration() {
         return snapshotGroupConfiguration;
+    }
+
+    public String getSlotsharingGroupConfiguration() {
+        return slotsharingGroupConfiguration;
     }
 }
