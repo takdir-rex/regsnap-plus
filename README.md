@@ -4,7 +4,7 @@ Local Recovery and Partial Snapshot based on Apache Flink.
 
 This repository was developed from https://github.com/apache/flink/tree/release-1.14 and modified to realize our research objective.
 
-The in-flight logs implementations adopted from https://github.com/delftdata/Clonos
+The in-flight logs implementations are adopted and adjusted from https://github.com/delftdata/Clonos
 
 The previous modification was published at https://github.com/takdir-rex/regsnap
 
