@@ -18,4 +18,4 @@ The previous modification was published at https://github.com/takdir-rex/regsnap
 This artifact was evaluated using:
 * Synthetic streaming job. Available at: https://github.com/takdir-rex/synthetic-benchmark
 * Windowed Nexmark queries. Available at: https://github.com/takdir-rex/nexmark-windowed
-* Automation scripts are available at: 
+* Automation scripts are available at: https://github.com/takdir-rex/regsnap-plus/tree/main/scripts
