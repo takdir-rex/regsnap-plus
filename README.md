@@ -3,7 +3,7 @@
 Local Recovery and Partial Snapshot based on Apache Flink.
 
 This repository was developed from https://github.com/apache/flink/tree/release-1.14 and modified to enable local recovery transparently. Please refer to that URL for compilation.
-Alternatively, we provide executable binary file here: https://github.com/takdir-rex/flink-regsnap-plus/releases/tag/experimental . Start the flink cluster using the following command:
+Alternatively, we provide executable binary file here: https://github.com/takdir-rex/regsnap-plus/releases/tag/experimental . Start the flink cluster using the following command:
  ```
   bin\start-cluster.sh
  ```
@@ -24,5 +24,5 @@ The previous modification was published at https://github.com/takdir-rex/regsnap
 This artifact was evaluated using:
 * Synthetic streaming job. Available at: https://github.com/takdir-rex/synthetic-benchmark
 * Windowed Nexmark queries. Available at: https://github.com/takdir-rex/nexmark-windowed
-  Please refer to the associated repositories for the details. We also provide compiled binary in https://github.com/takdir-rex/flink-regsnap-plus/releases/tag/experimental
+  Please refer to the associated repositories for the details. We also provide compiled binary in https://github.com/takdir-rex/regsnap-plus/releases/tag/experimental
 * Automation scripts are available at: https://github.com/takdir-rex/regsnap-plus/tree/main/scripts
