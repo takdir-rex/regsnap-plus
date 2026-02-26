@@ -26,3 +26,7 @@ This artifact was evaluated using:
 * Windowed Nexmark queries. Available at: https://github.com/takdir-rex/nexmark-windowed
   Please refer to the associated repositories for the details. We also provide compiled binary in https://github.com/takdir-rex/regsnap-plus/releases/tag/experimental
 * Automation scripts are available at: https://github.com/takdir-rex/regsnap-plus/tree/main/scripts
+
+### Citation
+
+[Local recovery and partial snapshot in distributed stateful stream processing](https://link.springer.com/article/10.1007/s10115-025-02509-z)
